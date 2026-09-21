@@ -90,7 +90,20 @@ app.include_router(research_router)
 app.include_router(epistemic_router)
 app.include_router(memory_router)
 
-app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+from fastapi.responses import FileResponse
+from backend.config import BASE_DIR
+
+@app.get("/")
+async def serve_index():
+    root_index = BASE_DIR / "index.html"
+    if root_index.exists():
+        return FileResponse(root_index)
+    static_index = STATIC_DIR / "index.html"
+    if static_index.exists():
+        return FileResponse(static_index)
+    return {"message": "API rodando com sucesso"}
+
+app.mount("/", StaticFiles(directory=str(BASE_DIR), html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn

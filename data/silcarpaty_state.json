@@ -1,0 +1,27 @@
+{
+  "active": true,
+  "toggle_count": 4,
+  "last_toggle_timestamp": "2026-09-09T22:09:42.235533",
+  "history": [
+    {
+      "toggle_index": 1,
+      "new_state": "OFF",
+      "timestamp": "2026-09-09T21:47:54.024347"
+    },
+    {
+      "toggle_index": 2,
+      "new_state": "ON",
+      "timestamp": "2026-09-09T21:47:54.032849"
+    },
+    {
+      "toggle_index": 3,
+      "new_state": "OFF",
+      "timestamp": "2026-09-09T22:09:42.228455"
+    },
+    {
+      "toggle_index": 4,
+      "new_state": "ON",
+      "timestamp": "2026-09-09T22:09:42.235533"
+    }
+  ]
+}

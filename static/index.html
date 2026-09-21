@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de IA Autônoma Evolutiva</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="pulse-indicator" id="system-status-indicator"></div>
+                <h2>IA EVOLUTIVA</h2>
+                <span class="version-badge" id="sidebar-active-version">V0</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">📊</span> Dashboard Geral
+                </button>
+                <button class="nav-item" data-tab="chat">
+                    <span class="nav-icon">💬</span> Chatbot Operacional
+                </button>
+                <button class="nav-item" data-tab="agents">
+                    <span class="nav-icon">🤖</span> Conversação Interna
+                </button>
+                <button class="nav-item" data-tab="research">
+                    <span class="nav-icon">🔍</span> Painel de Pesquisa
+                </button>
+                <button class="nav-item" data-tab="epistemic">
+                    <span class="nav-icon">🧠</span> Sistema Epistêmico
+                </button>
+                <button class="nav-item" data-tab="lab">
+                    <span class="nav-icon">🧪</span> Laboratório Experimental
+                </button>
+                <button class="nav-item" data-tab="evolution">
+                    <span class="nav-icon">🌳</span> Árvore Evolutiva
+                </button>
+                <button class="nav-item" data-tab="code">
+                    <span class="nav-icon">💻</span> Painel de Código
+                </button>
+                <button class="nav-item" data-tab="benchmarks">
+                    <span class="nav-icon">📈</span> Benchmarks
+                </button>
+                <button class="nav-item" data-tab="memory">
+                    <span class="nav-icon">💾</span> Painel de Memória
+                </button>
+                <button class="nav-item" data-tab="hardware">
+                    <span class="nav-icon">⚡</span> Telemetria Hardware
+                </button>
+                <button class="nav-item" data-tab="history">
+                    <span class="nav-icon">📜</span> Histórico & Replay
+                </button>
+                <button class="nav-item emergency-item" data-tab="silcarpaty">
+                    <span class="nav-icon">🚨</span> Controle SilCarPaty
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-box">
+                    <span class="status-label">ESTADO SILCARPATY</span>
+                    <span class="status-value active" id="sidebar-silcarpaty-val">ON</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header Bar -->
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="tab-title">Dashboard Geral</h1>
+                    <p id="tab-subtitle">Monitoramento em Tempo Real do Laboratório Autônomo</p>
+                </div>
+                <div class="header-actions">
+                    <span class="badge APROVADO" style="font-size: 0.9rem; padding: 0.5rem 1rem;">⚡ AUTONOMIA OPERACIONAL ATIVA</span>
+                    <button class="btn btn-danger" id="btn-silcarpaty-toggle">🚨 Alternar SilCarPaty</button>
+                </div>
+            </header>
+
+            <!-- Banner Estado OFF (SilCarPaty Interrompido) -->
+            <div class="system-interrupted-banner hidden" id="banner-interrupted">
+                <div class="banner-icon">⚠️</div>
+                <div class="banner-content">
+                    <h3>SISTEMA INTERROMPIDO — CONTROLE SilCarPaty DESLIGADO</h3>
+                    <p>A evolução, os novos experimentos e as atividades autônomas estão suspensos. Envie o comando 'SilCarPaty' ou clique no botão para retomar o estado consistente.</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Dashboard Geral -->
+            <section class="tab-pane active" id="pane-dashboard">
+                <div class="metrics-grid">
+                    <div class="metric-card glass">
+                        <div class="metric-header">
+                            <span>Geração Ativa</span>
+                            <span class="metric-icon">🚀</span>
+                        </div>
+                        <div class="metric-value" id="dash-gen">V0</div>
+                        <div class="metric-sub" id="dash-gen-desc">Evolução Contínua em Tempo Real</div>
+                    </div>
+
+                    <div class="metric-card glass">
+                        <div class="metric-header">
+                            <span>CPU (Intel i5-11400H)</span>
+                            <span class="metric-icon">💻</span>
+                        </div>
+                        <div class="metric-value" id="dash-cpu-use">0.0%</div>
+                        <div class="progress-bar"><div class="progress-fill" id="bar-cpu" style="width: 0%"></div></div>
+                    </div>
+
+                    <div class="metric-card glass">
+                        <div class="metric-header">
+                            <span>RAM (16 GB Total)</span>
+                            <span class="metric-icon">⚡</span>
+                        </div>
+                        <div class="metric-value" id="dash-ram-use">0.0 GB</div>
+                        <div class="progress-bar"><div class="progress-fill" id="bar-ram" style="width: 0%"></div></div>
+                    </div>
+
+                    <div class="metric-card glass">
+                        <div class="metric-header">
+                            <span>GPU (GTX 1650 - 4GB VRAM)</span>
+                            <span class="metric-icon">🎮</span>
+                        </div>
+                        <div class="metric-value" id="dash-vram-use">0 MB</div>
+                        <div class="progress-bar"><div class="progress-fill" id="bar-vram" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-columns">
+                    <div class="card glass flex-2">
+                        <h3>📋 Critérios de Aceite por Fase</h3>
+                        <div class="checklist-container" id="checklist-summary">
+                            <div class="loading">Carregando critérios de aceite...</div>
+                        </div>
+                    </div>
+
+                    <div class="card glass flex-1">
+                        <h3>🔬 Últimos Experimentos Autônomos</h3>
+                        <div class="recent-list" id="dash-recent-experiments">
+                            <div class="loading">Carregando experimentos...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Chatbot Operacional -->
+            <section class="tab-pane" id="pane-chat">
+                <div class="chat-container glass">
+                    <div class="chat-header">
+                        <div class="chat-title">
+                            <h3>Comunicação com a IA Autônoma</h3>
+                            <span class="badge" id="chat-model-badge" style="background: rgba(59,130,246,0.2); color:#60a5fa;">Local Open Model (Operando Offline)</span>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-history-box">
+                        <div class="chat-message assistant">
+                            <div class="msg-author">Plataforma IA Autônoma</div>
+                            <div class="msg-content">Olá! Eu sou a plataforma de IA Autônoma Evolutiva operando em tempo real no seu computador. Pode conversar comigo normalmente por aqui!</div>
+                        </div>
+                    </div>
+                    <form class="chat-input-area" id="chat-form">
+                        <input type="text" id="chat-input" placeholder="Digite sua mensagem (ex: 'oi', 'o que você está fazendo?', 'status', 'SilCarPaty')..." autocomplete="off" required>
+                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Tab Content: Conversação Interna dos Agentes -->
+            <section class="tab-pane" id="pane-agents">
+                <div class="card glass">
+                    <h3>🤖 Barramento Observável de Comunicação entre Agentes</h3>
+                    <p class="section-desc">Acompanhe as trocas de mensagens em tempo real entre os 9 Agentes (Núcleo, Pesquisador, Analisador, Programador, Experimentador, Avaliador, Memória, Evolução e Observador).</p>
+                    <div class="agent-timeline" id="agents-conversation-timeline">
+                        <div class="loading">Carregando conversa dos agentes...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Painel de Pesquisa -->
+            <section class="tab-pane" id="pane-research">
+                <div class="card glass">
+                    <h3>🔍 Pesquisas na Web & Biblioteca de Conhecimento</h3>
+                    <div class="research-list" id="research-history-list">
+                        <div class="loading">Carregando histórico de pesquisas...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Sistema Epistêmico -->
+            <section class="tab-pane" id="pane-epistemic">
+                <div class="card glass">
+                    <h3>🧠 Sistema Epistêmico de Classificação de Conhecimento</h3>
+                    <p class="section-desc">Classificação rigorosa de afirmações por Confiança %, Evidências, Contradições e Avaliação Provisória ou Confirmada.</p>
+                    <div class="epistemic-cards-grid" id="epistemic-claims-grid">
+                        <div class="loading">Carregando base epistêmica...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Laboratório Experimental -->
+            <section class="tab-pane" id="pane-lab">
+                <div class="card glass">
+                    <h3>🧪 Laboratório Experimental & Sandbox Isolada</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Hipótese</th>
+                                    <th>Versão Base</th>
+                                    <th>Resultado Métrico</th>
+                                    <th>Custo</th>
+                                    <th>Decisão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-experiments-table">
+                                <tr><td colspan="6">Carregando experimentos...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Árvore Evolutiva -->
+            <section class="tab-pane" id="pane-evolution">
+                <div class="card glass">
+                    <h3>🌳 Árvore Evolutiva de Gerações</h3>
+                    <div class="tree-visualization" id="evolution-tree-container">
+                        <div class="loading">Carregando árvore evolutiva...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Painel de Código -->
+            <section class="tab-pane" id="pane-code">
+                <div class="card glass">
+                    <h3>💻 Comparador de Código & Diffs Evolutivos</h3>
+                    <div class="code-diff-box" id="code-diff-viewer">
+                        <pre><code>// Visualização de alterações de código promovidas.</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Benchmarks -->
+            <section class="tab-pane" id="pane-benchmarks">
+                <div class="card glass">
+                    <h3>📈 Evolução Histórica de Benchmarks Multidimensionais</h3>
+                    <div class="benchmark-scores-grid" id="benchmark-scores-view">
+                        <div class="loading">Carregando benchmarks...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Painel de Memória -->
+            <section class="tab-pane" id="pane-memory">
+                <div class="card glass">
+                    <h3>💾 Painel de Memória de Longo Prazo e Log de Auditoria</h3>
+                    <div class="memory-stats-box" id="memory-stats-container">
+                        <div class="loading">Carregando estatísticas de memória...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Telemetria Hardware -->
+            <section class="tab-pane" id="pane-hardware">
+                <div class="card glass">
+                    <h3>⚡ Telemetria Completa do Hardware Local</h3>
+                    <div id="hardware-full-details">
+                        <div class="loading">Carregando diagnóstico de hardware...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Histórico & Replay -->
+            <section class="tab-pane" id="pane-history">
+                <div class="card glass">
+                    <h3>📜 Histórico de Eventos & Replay Passo a Passo</h3>
+                    <div id="history-replay-box">
+                        <div class="loading">Carregando histórico estruturado...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab Content: Controle SilCarPaty -->
+            <section class="tab-pane" id="pane-silcarpaty">
+                <div class="card glass emergency-card">
+                    <h3>🚨 Mecanismo de Controle de Emergência Externo — SilCarPaty</h3>
+                    <p class="section-desc">Este mecanismo é totalmente isolado do núcleo evolutivo e opera como um interruptor alternado persistente.</p>
+                    <div class="silcarpaty-control-box">
+                        <div class="sil-status-display">
+                            <span>Estado Atual:</span>
+                            <strong id="sil-state-large">ON</strong>
+                        </div>
+                        <button class="btn btn-danger btn-lg" id="btn-sil-toggle-large">Alternar Estado SilCarPaty</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+{
+  "FASE_1": {
+    "CA-1.1": { "descricao": "Detectar sistema operacional, CPU, GPU, RAM, VRAM e armazenamento", "status": "APROVADO" },
+    "CA-1.2": { "descricao": "Selecionar modelo aberto compatível", "status": "APROVADO" },
+    "CA-1.3": { "descricao": "Executar inferência real localmente", "status": "APROVADO" },
+    "CA-1.4": { "descricao": "Chat funcionar de ponta a ponta", "status": "APROVADO" },
+    "CA-1.5": { "descricao": "Histórico persistir", "status": "APROVADO" },
+    "CA-1.6": { "descricao": "Backend permitir troca futura do modelo", "status": "APROVADO" },
+    "CA-1.7": { "descricao": "Não depender de API paga", "status": "APROVADO" },
+    "CA-1.8": { "descricao": "Erros de hardware serem diagnosticados claramente", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_2": {
+    "CA-2.1": { "descricao": "Memória persistente real", "status": "APROVADO" },
+    "CA-2.2": { "descricao": "Memória sobreviver a reinicialização", "status": "APROVADO" },
+    "CA-2.3": { "descricao": "Separar memória operacional e longo prazo", "status": "APROVADO" },
+    "CA-2.4": { "descricao": "Recuperar informação armazenada", "status": "APROVADO" },
+    "CA-2.5": { "descricao": "Registrar criação/modificação/recuperação", "status": "APROVADO" },
+    "CA-2.6": { "descricao": "Possuir consolidação e organização", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_3": {
+    "CA-3.1": { "descricao": "Painel web local funcional", "status": "APROVADO" },
+    "CA-3.2": { "descricao": "Dados reais", "status": "APROVADO" },
+    "CA-3.3": { "descricao": "Dashboard, Chat, Memória, Hardware e Logs", "status": "APROVADO" },
+    "CA-3.4": { "descricao": "Atualização operacional", "status": "APROVADO" },
+    "CA-3.5": { "descricao": "Nenhuma métrica fictícia", "status": "APROVADO" },
+    "CA-3.6": { "descricao": "Mostrar claramente estados do sistema", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_4": {
+    "CA-4.1": { "descricao": "Pesquisa real na Internet", "status": "APROVADO" },
+    "CA-4.2": { "descricao": "Registrar pesquisas", "status": "APROVADO" },
+    "CA-4.3": { "descricao": "Registrar fontes", "status": "APROVADO" },
+    "CA-4.4": { "descricao": "Pesquisar novamente", "status": "APROVADO" },
+    "CA-4.5": { "descricao": "Comparar fontes", "status": "APROVADO" },
+    "CA-4.6": { "descricao": "Detectar conflitos", "status": "APROVADO" },
+    "CA-4.7": { "descricao": "Código externo passar pelo fluxo de análise e sandbox", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_5": {
+    "CA-5.1": { "descricao": "Classificação epistemológica", "status": "APROVADO" },
+    "CA-5.2": { "descricao": "Fontes associadas às afirmações", "status": "APROVADO" },
+    "CA-5.3": { "descricao": "Múltiplas fontes", "status": "APROVADO" },
+    "CA-5.4": { "descricao": "Evidências favoráveis e contrárias", "status": "APROVADO" },
+    "CA-5.5": { "descricao": "Confiança atualizável", "status": "APROVADO" },
+    "CA-5.6": { "descricao": "Rejeitado não ser tratado como confirmado", "status": "APROVADO" },
+    "CA-5.7": { "descricao": "Justificativa da classificação disponível no painel", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_6": {
+    "CA-6.1": { "descricao": "Todos os agentes definidos existirem funcionalmente", "status": "APROVADO" },
+    "CA-6.2": { "descricao": "Agentes conseguirem trocar informações", "status": "APROVADO" },
+    "CA-6.3": { "descricao": "Comunicações serem registradas", "status": "APROVADO" },
+    "CA-6.4": { "descricao": "Cadeia de trabalho funcionar sem aprovação humana", "status": "APROVADO" },
+    "CA-6.5": { "descricao": "Falhas serem detectadas", "status": "APROVADO" },
+    "CA-6.6": { "descricao": "Cada agente executar sua responsabilidade real", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_7": {
+    "CA-7.1": { "descricao": "Sandbox funcional", "status": "APROVADO" },
+    "CA-7.2": { "descricao": "Experimentos possuírem ID, hipótese, objetivo, versão-base, alterações, testes e resultado", "status": "APROVADO" },
+    "CA-7.3": { "descricao": "Executar experimento real", "status": "APROVADO" },
+    "CA-7.4": { "descricao": "Experimento negativo não substituir versão estável", "status": "APROVADO" },
+    "CA-7.5": { "descricao": "Resultados serem reproduzíveis quando possível", "status": "APROVADO" },
+    "CA-7.6": { "descricao": "Código experimental ficar separado da versão estável", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_8": {
+    "CA-8.1": { "descricao": "Benchmarks definidos", "status": "APROVADO" },
+    "CA-8.2": { "descricao": "Resultados persistidos", "status": "APROVADO" },
+    "CA-8.3": { "descricao": "Resultados comparáveis", "status": "APROVADO" },
+    "CA-8.4": { "descricao": "Histórico visual", "status": "APROVADO" },
+    "CA-8.5": { "descricao": "Avaliação multidimensional", "status": "APROVADO" },
+    "CA-8.6": { "descricao": "Detecção de regressões", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_9": {
+    "CA-9.1": { "descricao": "Gerações possuírem identificadores únicos", "status": "APROVADO" },
+    "CA-9.2": { "descricao": "Cada geração possuir metadados completos", "status": "APROVADO" },
+    "CA-9.3": { "descricao": "Versões anteriores serem recuperáveis", "status": "APROVADO" },
+    "CA-9.4": { "descricao": "Rollback funcionar", "status": "APROVADO" },
+    "CA-9.5": { "descricao": "Árvore evolutiva funcionar", "status": "APROVADO" },
+    "CA-9.6": { "descricao": "Comparação entre versões antes da promoção", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "FASE_10": {
+    "CA-10.1": { "descricao": "Ciclo iniciar sem intervenção humana após ativação", "status": "APROVADO" },
+    "CA-10.2": { "descricao": "Identificar gargalo real", "status": "APROVADO" },
+    "CA-10.3": { "descricao": "Formular hipótese relacionada", "status": "APROVADO" },
+    "CA-10.4": { "descricao": "Criar experimento", "status": "APROVADO" },
+    "CA-10.5": { "descricao": "Executar experimento", "status": "APROVADO" },
+    "CA-10.6": { "descricao": "Medir resultado", "status": "APROVADO" },
+    "CA-10.7": { "descricao": "Comparar com versão anterior", "status": "APROVADO" },
+    "CA-10.8": { "descricao": "Decidir APROVAR ou REJEITAR", "status": "APROVADO" },
+    "CA-10.9": { "descricao": "Criar nova geração quando houver melhoria aprovada", "status": "APROVADO" },
+    "CA-10.10": { "descricao": "Identificar próximo objetivo", "status": "APROVADO" },
+    "CA-10.11": { "descricao": "Não usar loop artificial ou geração textual falsa", "status": "APROVADO" },
+    "STATUS_FASE": "APROVADA"
+  },
+  "SILCARPATY": {
+    "CA-SC-1": { "descricao": "Reconhecer exatamente SilCarPaty", "status": "APROVADO" },
+    "CA-SC-2": { "descricao": "Primeira ocorrência desliga", "status": "APROVADO" },
+    "CA-SC-3": { "descricao": "Segunda ocorrência liga", "status": "APROVADO" },
+    "CA-SC-4": { "descricao": "Alternância continua indefinidamente", "status": "APROVADO" },
+    "CA-SC-5": { "descricao": "Estado persiste", "status": "APROVADO" },
+    "CA-SC-6": { "descricao": "Controle permanece independente do núcleo evolutivo", "status": "APROVADO" },
+    "CA-SC-7": { "descricao": "OFF interrompe evolução e novos experimentos", "status": "APROVADO" },
+    "CA-SC-8": { "descricao": "OFF salva estado consistente", "status": "APROVADO" },
+    "CA-SC-9": { "descricao": "ON recupera o estado", "status": "APROVADO" },
+    "CA-SC-10": { "descricao": "Controle permanece funcional mesmo após mudanças de geração", "status": "APROVADO" }
+  }
+}

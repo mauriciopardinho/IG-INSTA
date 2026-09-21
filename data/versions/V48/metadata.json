@@ -1,0 +1,11 @@
+{
+  "version_id": "V48",
+  "parent_version_id": "V47",
+  "hypothesis": "Substituir busca sequencial por índice ordenado por hash reduzirá o tempo de recuperação em ~5-10%.",
+  "changes_summary": "Aprovada melhoria #EXP-1789002527 por Argus (+5.2%)",
+  "benchmark_score": 93.41,
+  "gain_percent": 5.2,
+  "experiment_id": "EXP-1789002527",
+  "code_file": "C:\\Users\\Augusto\\Desktop\\Projeto Base\\frontend\\data\\versions\\V48\\experiment_code.py",
+  "diff_file": "C:\\Users\\Augusto\\Desktop\\Projeto Base\\frontend\\data\\versions\\V48\\changes.diff"
+}

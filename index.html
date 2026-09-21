@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Álbum de Aniversário - Paula ❤️</title>
+    <!-- Favicon de Coração para a aba do navegador -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Great+Vibes&family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap"
+        rel="stylesheet">
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css?v=2026_v99">
+</head>
+
+<body>
+
+    <!-- Dedicated HTML5 Audio Player for Background Music (Ed Sheeran - Photograph) -->
+    <audio id="bg-audio" loop preload="auto">
+        <source src="https://archive.org/download/edshrn/06%20Ed%20Sheeran%20Photograph.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Pull-to-Refresh Spinner Indicator (Estilo Instagram) -->
+    <div id="pull-to-refresh" class="ptr-container">
+        <div class="ptr-icon">🔄</div>
+        <span class="ptr-text">Puxe para atualizar</span>
+    </div>
+
+    <!-- Sound & Music Player Controls -->
+    <div class="audio-control-bar">
+        <button id="sound-toggle" class="sound-btn" aria-label="Alternar som">
+            <svg class="sound-icon-on" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+            </svg>
+            <svg class="sound-icon-off hidden" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor"
+                    d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.5C15.58,18 14.83,18.4 14,18.71V20.77C15.38,20.44 16.63,19.78 17.7,18.9L20.73,21.93L22,20.66L4.27,3M14,3.23V5.29C14.73,5.5 15.43,5.83 16.07,6.26L14.59,7.74C14.41,7.65 14.21,7.58 14,7.54V9.54L19,14.54C19,13.7 19,12.85 19,12C19,7.72 16,4.14 14,3.23M16.5,12C16.5,11.2 16.1,10.5 15.5,10.05L14,11.55V12.45L15.46,13.9C15.48,13.28 16.5,12.62 16.5,12Z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Navigation Arrows -->
+    <button id="btn-prev" class="nav-btn nav-btn-left" aria-label="Página Anterior">
+        <svg viewBox="0 0 24 24" width="36" height="36">
+            <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
+        </svg>
+    </button>
+    <button id="btn-next" class="nav-btn nav-btn-right" aria-label="Próxima Página">
+        <svg viewBox="0 0 24 24" width="36" height="36">
+            <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+        </svg>
+    </button>
+
+    <!-- Album Container -->
+    <div class="album-viewport" id="album-viewport">
+        <div class="flip-book" id="book">
+
+            <!-- PAGINA 0: CAPA PRINCIPAL (Capa Externa) -->
+            <div class="page page-cover">
+                <div class="page-content cover-content">
+                    <div class="cover-header">
+                        <span class="cover-seal">Para uma mulher especial</span>
+                    </div>
+                    <div class="cover-body">
+                        <h1 class="cover-title glitch" data-text="Feliz Aniversário">FELIZ ANIVERSÁRIO</h1>
+                        <h2 class="cover-subtitle glitch" data-text="Paula">PAULA</h2>
+                        <div class="cover-art">
+                            <div class="art-grid"></div>
+
+                            <!-- Central Glowing 3D Tech Sphere -->
+                            <div class="tech-sphere">
+                                <div class="sphere-core">
+                                    <svg class="art-logo" viewBox="0 0 24 24">
+                                        <!-- Coração SVG no centro -->
+                                        <path
+                                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </div>
+                                <div class="sphere-ring ring-1"></div>
+                                <div class="sphere-ring ring-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="cover-interactive-hint">
+                            <span class="hint-sparkle">✨</span>
+                            <span class="hint-text">Abra para ler sua carta especial</span>
+                            <span class="hint-sparkle">✨</span>
+                        </div>
+                    </div>
+                    <div class="cover-footer">
+                        <span>EDIÇÃO ESPECIAL • PAULA ❤️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGINA 1: MEMÓRIAS -->
+            <div class="page page-left">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">MEMÓRIAS</span>
+                        <h3 class="page-title">Registros Especiais</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#01</div>
+                            <div class="slot-name">Instantâneo Bonito</div>
+                            <div class="slot-role">Um instante lindo guardado com todo o carinho no coração ✨</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#02</div>
+                            <div class="slot-name">Laços & Afeto</div>
+                            <div class="slot-role">Pessoas queridas que deixam a vida mais leve e alegre ❤️</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#03</div>
+                            <div class="slot-name">Momento Guardado</div>
+                            <div class="slot-role">Um registro especial que sempre traz boas lembranças 📸</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#04</div>
+                            <div class="slot-name">Companhia Querida</div>
+                            <div class="slot-role">A alegria de compartilhar a vida com quem amamos 🌟</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#05</div>
+                            <div class="slot-name">Gente Especial</div>
+                            <div class="slot-role">Momentos cheios de significado, carinho e consideração 💖</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 1</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 2: QUALIDADES -->
+            <div class="page page-right">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">AFETO</span>
+                        <h3 class="page-title">Gente Que A Gente Ama</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#06</div>
+                            <div class="slot-name">Luz & Alegria</div>
+                            <div class="slot-role">A presença marcante de quem transmite paz e boas energias ☀️</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#07</div>
+                            <div class="slot-name">Abraço Querido</div>
+                            <div class="slot-role">Onde o respeito, a amizade e o carinho se encontram 🤗</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#08</div>
+                            <div class="slot-name">Vínculos Fortes</div>
+                            <div class="slot-role">Pessoas especiais que tornam a vida muito mais rica e bonita 💖</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#09</div>
+                            <div class="slot-name">Boas Recordações</div>
+                            <div class="slot-role">Pequenos instantes que deixam marcas boas no coração ✨</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#10</div>
+                            <div class="slot-name">Presença Marcante</div>
+                            <div class="slot-role">Encontros inesquecíveis com pessoas inestimáveis 🌟</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 2</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 3: PASSEIOS -->
+            <div class="page page-left">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">PASSEIOS</span>
+                        <h3 class="page-title">Caminhos & Lugares</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#11</div>
+                            <div class="slot-name">Dia De Festa</div>
+                            <div class="slot-role">Celebrando a vida e construindo histórias inesquecíveis 🚗</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#12</div>
+                            <div class="slot-name">Dias De Sol</div>
+                            <div class="slot-role">Aproveitando os bons momentos na melhor companhia 🏖️</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#13</div>
+                            <div class="slot-name">Reunião Familiar</div>
+                            <div class="slot-role">Encontros queridos que ficam eternizados na memória ☕</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#14</div>
+                            <div class="slot-name">Novos Caminhos</div>
+                            <div class="slot-role">Colecionando experiências e sorrisos pelo caminho 🗺️</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#15</div>
+                            <div class="slot-name">Gratidão Pela Vida</div>
+                            <div class="slot-role">Agradecendo por cada presença importante na nossa história 🌅</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 3</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 4: INSTANTES -->
+            <div class="page page-right">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">INSTANTES</span>
+                        <h3 class="page-title">Pequenos Grandes Momentos</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#16</div>
+                            <div class="slot-name">Tardes De Paz</div>
+                            <div class="slot-role">Descontraindo e aproveitando a felicidade de estar junto 🛋️</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#17</div>
+                            <div class="slot-name">União & Festa</div>
+                            <div class="slot-role">Festa, convivência e motivos de sobra para comemorar 🎈</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#18</div>
+                            <div class="slot-name">Bons Encontros</div>
+                            <div class="slot-role">Conversas sinceras, sorrisos e a leveza da vida 💬</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#19</div>
+                            <div class="slot-name">Alegria De Viver</div>
+                            <div class="slot-role">A felicidade de festejar e abraçar quem amamos ☕</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#20</div>
+                            <div class="slot-name">Harmonia Familiar</div>
+                            <div class="slot-role">Reuniões de família, amigos e afetos verdadeiros 🎶</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 4</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 5: TRAJETÓRIA -->
+            <div class="page page-left">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">TRAJETÓRIA</span>
+                        <h3 class="page-title">A Trajetória Da Paula</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#21</div>
+                            <div class="slot-name">Caminhos Da Vida</div>
+                            <div class="slot-role">Pessoas e laços reais que acompanham essa história 🏠</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#22</div>
+                            <div class="slot-name">Vivências Especiais</div>
+                            <div class="slot-role">Lugares, festas e momentos marcantes vividos juntos ✈️</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#23</div>
+                            <div class="slot-name">Lembranças Eternas</div>
+                            <div class="slot-role">Recordações preciosas eternizadas com muito carinho 👵👴</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#24</div>
+                            <div class="slot-name">Sonhos & Conquistas</div>
+                            <div class="slot-role">Celebrando cada passo, cada aprendizado e cada vitória 🌈</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#25</div>
+                            <div class="slot-name">Família & Amigos</div>
+                            <div class="slot-role">Sentimentos puros e laços fortes que nos unem a você 👨‍👩‍👧‍👦</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 5</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 6: CARINHO -->
+            <div class="page page-right">
+                <div class="page-content">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">CARINHO</span>
+                        <h3 class="page-title">Sentimentos Do Coração</h3>
+                    </div>
+                    <div class="stickers-grid">
+                        <div class="sticker-slot">
+                            <div class="slot-number">#26</div>
+                            <div class="slot-name">Cuidado & Apoio</div>
+                            <div class="slot-role">Apoio constante e a certeza de ter com quem contar 🤝</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#27</div>
+                            <div class="slot-name">Achego & Acolhimento</div>
+                            <div class="slot-role">Pessoas que transmitem abrigo, paz e serenidade ⚓</div>
+                        </div>
+                        <div class="sticker-slot special-slot">
+                            <div class="slot-number">#28</div>
+                            <div class="slot-name">Amor De Família</div>
+                            <div class="slot-role">O valor imensurável da família, dos amigos e de quem te ama ❤️</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#29</div>
+                            <div class="slot-name">Celebrando A Paula</div>
+                            <div class="slot-role">Homenageando quem torna o nosso mundo mais feliz 🎉</div>
+                        </div>
+                        <div class="sticker-slot">
+                            <div class="slot-number">#30</div>
+                            <div class="slot-name">Laços Para Sempre</div>
+                            <div class="slot-role">Construindo e guardando as memórias mais lindas da vida 💫</div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 6</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 7: CELEBRAÇÃO -->
+            <div class="page page-left romantic-page">
+                <div class="page-content glass-card">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">CELEBRAÇÃO</span>
+                        <h3 class="page-title playfair-title">Tempo De Comemorar</h3>
+                    </div>
+                    <div class="special-moment-box">
+                        <!-- Relógio de Tempo -->
+                        <div class="love-timer-card">
+                            <div class="timer-title">🎂 CELEBRANDO O ANIVERSÁRIO DA PAULA HÁ...</div>
+                            <div class="timer-display" id="love-timer">
+                                <div class="time-unit"><span id="timer-years">0</span><small>Anos</small></div>
+                                <div class="time-unit"><span id="timer-days">0</span><small>Dias</small></div>
+                                <div class="time-unit"><span id="timer-hours">0</span><small>Horas</small></div>
+                                <div class="time-unit"><span id="timer-minutes">0</span><small>Min</small></div>
+                                <div class="time-unit"><span id="timer-seconds">0</span><small>Seg</small></div>
+                            </div>
+                        </div>
+
+                        <div class="timer-quote">
+                            <p>"Celebrar o aniversário da Paula é comemorar a vida, a alegria e a felicidade de reunir a família e os amigos em volta de quem a gente tanto ama."</p>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 7</div>
+                </div>
+            </div>
+
+            <!-- PAGINA 8: DESTAQUE -->
+            <div class="page page-right romantic-page">
+                <div class="page-content glass-card">
+                    <div class="page-header">
+                        <span class="tech-badge badge-love">DESTAQUE</span>
+                        <h3 class="page-title playfair-title">Foto Especial</h3>
+                    </div>
+                    <div class="special-moment-box">
+                        <div class="photo-placeholder polaroid-frame" id="hero-photo-placeholder" title="Clique para ver a foto em tamanho grande">
+                            <span class="heart-icon">💖</span>
+                            <p class="photo-text">Foto Especial</p>
+                            <span class="polaroid-caption">Paula ❤️</span>
+                        </div>
+                        <div class="scratch-card-container">
+                            <div class="scratch-card-header">✨ SURPRESA: RASPE AQUI COM O DEDO!</div>
+                            <div class="scratch-box">
+                                <div class="scratch-secret">
+                                    <span>🎁 VALE 1 DIA DE MUITA FESTA, ALEGRIA & ABRAÇOS COM QUEM VOCÊ AMA ❤️</span>
+                                </div>
+                                <canvas id="scratch-canvas" width="280" height="65"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page-footer">Pág. 8</div>
+                </div>
+            </div>
+
+            <!-- PAGINA CONTRACAPA FINAL: DEDICATÓRIA DE ANIVERSÁRIO -->
+            <div class="page page-cover-back">
+                <div class="page-content cover-back-content">
+                    <div class="cover-back-header">
+                        <h2>CARTA DE ANIVERSÁRIO</h2>
+                        <span class="cover-inside-title">Para a Paula ❤️</span>
+                    </div>
+                    <div class="cover-back-body">
+                        <div class="birthday-letter">
+                            <p class="letter-p">
+                                Paula, hoje o dia é todo seu! Celebrar o seu aniversário é celebrar a luz, a energia e a generosidade que você espalha por onde passa. Você tem a capacidade incrível de unir a família, alegrar os amigos e transformar qualquer momento em uma grande festa.
+                            </p>
+                            <p class="letter-p">
+                                Olhar para a sua trajetória e ver a pessoa maravilhosa que você é nos enche de orgulho e admiração. Mãe, filha, esposa, irmã, tia, amiga querida... você desempenha cada papel na vida com um coração enorme e com uma força inspiradora.
+                            </p>
+                            <p class="letter-p">
+                                Que o seu novo ano venha repleto de saúde, paz, gargalhadas, viagens e muitos sonhos realizados. Que você esteja sempre cercada por todo esse amor, carinho e pelas pessoas queridas que te admiram tanto. Feliz Aniversário!
+                            </p>
+                            <p class="signature-love">Com todo o carinho de todos que te amam! Happy Birthday! 🎉❤️✨</p>
+                        </div>
+                        <div class="barcode-container">
+                            <div class="barcode">
+                                <div class="bar"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar"></div>
+                                <div class="bar thick"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar"></div>
+                                <div class="bar thick"></div>
+                                <div class="bar"></div>
+                                <div class="bar thin"></div>
+                                <div class="bar thick"></div>
+                            </div>
+                            <span class="barcode-number">PAULA ❤️ 12-08-1996</span>
+                        </div>
+                    </div>
+                    <div class="cover-back-footer">
+                        <span>Edição Especial de Aniversário • Feito com Amor • 2026</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Lightbox para Zoom das Fotos -->
+    <div id="photo-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button id="modal-close" class="modal-close-btn" aria-label="Fechar">&times;</button>
+            <div class="modal-img-wrapper">
+                <img id="modal-img" src="" alt="Foto em destaque" />
+            </div>
+            <h3 id="modal-title"></h3>
+            <p id="modal-desc"></p>
+        </div>
+    </div>
+
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Page Flip Library -->
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+    <!-- Logic -->
+    <script src="app.js?v=2026_v99"></script>
+</body>
+
+</html>

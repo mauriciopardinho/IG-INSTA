@@ -1,0 +1,9 @@
+--- a/code_V46.py
++++ b/code_V47.py
+@@ -1,5 +1,5 @@
+ # =========================================================
+-# Código de Otimização da Geração - Ciclo #CYC-0005
++# Código de Otimização da Geração - Ciclo #CYC-0006
+ # Autor: Vulcan (Agente Programador)
+ # Hipótese: Substituir busca sequencial por índice ordenado por hash reduzirá o tempo de recuperação em ~5-10%.
+ # Target Component: Planejamento

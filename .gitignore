@@ -7,3 +7,9 @@ venv/
 .env
 .idea/
 .vscode/
+node_modules/
+test_*.js
+inspect_*.js
+find_*.js
+test_*.py
+

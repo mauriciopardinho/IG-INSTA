@@ -1,0 +1,29 @@
+{
+  "name": "files",
+  "version": "1.0.0",
+  "description": "Isso \u00e9 um app web (funciona igual a um app, com \"colar link \u2192 baixar v\u00eddeo \u2192 ver legenda \u2192 compartilhar\"), pronto para voc\u00ea testar e depois transformar em um APK de verdade. Eu n\u00e3o consigo compilar um `.apk` diretamente aqui (n\u00e3o tenho Android SDK/Gradle neste ambiente), ent\u00e3o o caminho abaixo \u00e9 o mais direto para voc\u00ea chegar num \u00edcone instal\u00e1vel no celular.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "postinstall": "npx puppeteer browsers install chrome"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@jerrycoder/instagram-api": "^2.5.9",
+    "ab-downloader": "^2.0.0",
+    "btch-downloader": "^6.4.0",
+    "cakkatrok-instagram-downloader": "^2.0.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "instagram-url-direct": "^2.0.7",
+    "node-fetch": "^2.7.0",
+    "puppeteer": "^25.10.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "snapsave-media-downloader": "^2.4.1"
+  }
+}

@@ -1,450 +1,381 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Álbum de Aniversário - Paula ❤️</title>
-    <!-- Favicon de Coração para a aba do navegador -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Great+Vibes&family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap"
-        rel="stylesheet">
-    <!-- Style -->
-    <link rel="stylesheet" href="style.css?v=2026_v99">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Reelio — Baixar Vídeos do Instagram</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6c47ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+  :root {
+    --bg-dark: #0f0c1b;
+    --card-bg: #19142b;
+    --accent: #6c47ff;
+    --accent-glow: rgba(108, 71, 255, 0.35);
+    --violet: #8a3ffc;
+    --blue: #0f62fe;
+    --text-main: #f4f4f6;
+    --text-muted: #a29bfe;
+    --input-bg: #231c3d;
+    --border: #322856;
+    --error: #ff4757;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 440px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 80px var(--accent-glow);
+  }
+
+  header { text-align: center; margin-bottom: 24px; }
+  .mark {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px; box-shadow: 0 8px 16px var(--accent-glow);
+  }
+  .mark svg { width: 28px; height: 28px; stroke: #fff; }
+  h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  p { font-size: 13px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+
+  .field { position: relative; margin-bottom: 16px; }
+  input[type="url"] {
+    width: 100%; height: 52px; background: var(--input-bg);
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 0 84px 0 16px; color: #fff; font-size: 14px; outline: none;
+    transition: all 0.2s;
+  }
+  input[type="url"]:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+
+  .paste-btn {
+    position: absolute; right: 8px; top: 8px; bottom: 8px;
+    padding: 0 14px; background: rgba(255,255,255,0.08); border: none;
+    border-radius: 10px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .paste-btn:active { background: rgba(255,255,255,0.16); }
+
+  .primary-btn {
+    width: 100%; height: 52px; background: linear-gradient(135deg, var(--accent), var(--violet));
+    border: none; border-radius: 14px; color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 8px 20px var(--accent-glow); display: flex;
+    align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, opacity 0.2s;
+  }
+  .primary-btn:active { transform: scale(0.98); }
+  .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .status { font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; color: var(--text-muted); }
+  .status.error { color: var(--error); }
+
+  .result { display: none; margin-top: 20px; flex-direction: column; gap: 16px; }
+  .result.show { display: flex; }
+
+  .thumb-wrap {
+    width: 100%; height: 380px; background: #000; border-radius: 16px;
+    overflow: hidden; border: 1px solid var(--border); display: flex;
+    align-items: center; justify-content: center;
+  }
+  .thumb-wrap img, .thumb-wrap video {
+    width: 100%; height: 100%; object-fit: contain; background: #000;
+  }
+
+  .caption-box {
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; max-height: 120px; overflow-y: auto;
+  }
+  .caption-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+  .caption-text { font-size: 13px; line-height: 1.5; color: #ddd; white-space: pre-wrap; word-break: break-word; }
+
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  .action-btn {
+    width: 100%; height: 44px; background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 12px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;
+  }
+  .action-btn:hover { background: #3c2c57; }
+  .action-btn.download { background: linear-gradient(120deg, var(--violet), var(--blue)); border: none; }
+  .action-btn svg { width: 20px; height: 20px; }
+
+  footer { margin-top: 28px; text-align: center; color: #5f5478; font-size: 12px; line-height: 1.6; }
+</style>
 </head>
-
 <body>
-
-    <!-- Dedicated HTML5 Audio Player for Background Music (Ed Sheeran - Photograph) -->
-    <audio id="bg-audio" loop preload="auto">
-        <source src="https://archive.org/download/edshrn/06%20Ed%20Sheeran%20Photograph.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Pull-to-Refresh Spinner Indicator (Estilo Instagram) -->
-    <div id="pull-to-refresh" class="ptr-container">
-        <div class="ptr-icon">🔄</div>
-        <span class="ptr-text">Puxe para atualizar</span>
+<div class="app">
+  <header>
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
+    <h1>Reelio</h1>
+    <p>Cole o link de um post, reel ou vídeo público do Instagram. Ele traz o vídeo em HD com áudio e a legenda prontos.</p>
+  </header>
 
-    <!-- Sound & Music Player Controls -->
-    <div class="audio-control-bar">
-        <button id="sound-toggle" class="sound-btn" aria-label="Alternar som">
-            <svg class="sound-icon-on" viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor"
-                    d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
-            </svg>
-            <svg class="sound-icon-off hidden" viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor"
-                    d="M12,4L9.91,6.09L12,8.18M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.5C15.58,18 14.83,18.4 14,18.71V20.77C15.38,20.44 16.63,19.78 17.7,18.9L20.73,21.93L22,20.66L4.27,3M14,3.23V5.29C14.73,5.5 15.43,5.83 16.07,6.26L14.59,7.74C14.41,7.65 14.21,7.58 14,7.54V9.54L19,14.54C19,13.7 19,12.85 19,12C19,7.72 16,4.14 14,3.23M16.5,12C16.5,11.2 16.1,10.5 15.5,10.05L14,11.55V12.45L15.46,13.9C15.48,13.28 16.5,12.62 16.5,12Z" />
-            </svg>
-        </button>
+  <div class="field">
+    <input id="link-input" type="url" inputmode="url" placeholder="https://www.instagram.com/reel/..." autocomplete="off">
+    <button class="paste-btn" id="paste-btn">Colar</button>
+  </div>
+
+  <button class="primary-btn" id="fetch-btn">
+    <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Buscar mídia
+  </button>
+
+  <div class="status" id="status"></div>
+
+  <div class="result" id="result">
+    <div class="thumb-wrap">
+      <video id="preview-video" controls playsinline crossorigin="anonymous"></video>
+      <img id="preview-img" style="display:none; width:100%; height:100%; object-fit:contain;" />
     </div>
-
-    <!-- Navigation Arrows -->
-    <button id="btn-prev" class="nav-btn nav-btn-left" aria-label="Página Anterior">
-        <svg viewBox="0 0 24 24" width="36" height="36">
-            <path fill="currentColor" d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z" />
-        </svg>
-    </button>
-    <button id="btn-next" class="nav-btn nav-btn-right" aria-label="Próxima Página">
-        <svg viewBox="0 0 24 24" width="36" height="36">
-            <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
-        </svg>
-    </button>
-
-    <!-- Album Container -->
-    <div class="album-viewport" id="album-viewport">
-        <div class="flip-book" id="book">
-
-            <!-- PAGINA 0: CAPA PRINCIPAL (Capa Externa) -->
-            <div class="page page-cover">
-                <div class="page-content cover-content">
-                    <div class="cover-header">
-                        <span class="cover-seal">Para uma mulher especial</span>
-                    </div>
-                    <div class="cover-body">
-                        <h1 class="cover-title glitch" data-text="Feliz Aniversário">FELIZ ANIVERSÁRIO</h1>
-                        <h2 class="cover-subtitle glitch" data-text="Paula">PAULA</h2>
-                        <div class="cover-art">
-                            <div class="art-grid"></div>
-
-                            <!-- Central Glowing 3D Tech Sphere -->
-                            <div class="tech-sphere">
-                                <div class="sphere-core">
-                                    <svg class="art-logo" viewBox="0 0 24 24">
-                                        <!-- Coração SVG no centro -->
-                                        <path
-                                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                                            fill="currentColor" />
-                                    </svg>
-                                </div>
-                                <div class="sphere-ring ring-1"></div>
-                                <div class="sphere-ring ring-2"></div>
-                            </div>
-                        </div>
-
-                        <div class="cover-interactive-hint">
-                            <span class="hint-sparkle">✨</span>
-                            <span class="hint-text">Abra para ler sua carta especial</span>
-                            <span class="hint-sparkle">✨</span>
-                        </div>
-                    </div>
-                    <div class="cover-footer">
-                        <span>EDIÇÃO ESPECIAL • PAULA ❤️</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAGINA 1: MEMÓRIAS -->
-            <div class="page page-left">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">MEMÓRIAS</span>
-                        <h3 class="page-title">Registros Especiais</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#01</div>
-                            <div class="slot-name">Instantâneo Bonito</div>
-                            <div class="slot-role">Um instante lindo guardado com todo o carinho no coração ✨</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#02</div>
-                            <div class="slot-name">Laços & Afeto</div>
-                            <div class="slot-role">Pessoas queridas que deixam a vida mais leve e alegre ❤️</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#03</div>
-                            <div class="slot-name">Momento Guardado</div>
-                            <div class="slot-role">Um registro especial que sempre traz boas lembranças 📸</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#04</div>
-                            <div class="slot-name">Companhia Querida</div>
-                            <div class="slot-role">A alegria de compartilhar a vida com quem amamos 🌟</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#05</div>
-                            <div class="slot-name">Gente Especial</div>
-                            <div class="slot-role">Momentos cheios de significado, carinho e consideração 💖</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 1</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 2: QUALIDADES -->
-            <div class="page page-right">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">AFETO</span>
-                        <h3 class="page-title">Gente Que A Gente Ama</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#06</div>
-                            <div class="slot-name">Luz & Alegria</div>
-                            <div class="slot-role">A presença marcante de quem transmite paz e boas energias ☀️</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#07</div>
-                            <div class="slot-name">Abraço Querido</div>
-                            <div class="slot-role">Onde o respeito, a amizade e o carinho se encontram 🤗</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#08</div>
-                            <div class="slot-name">Vínculos Fortes</div>
-                            <div class="slot-role">Pessoas especiais que tornam a vida muito mais rica e bonita 💖</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#09</div>
-                            <div class="slot-name">Boas Recordações</div>
-                            <div class="slot-role">Pequenos instantes que deixam marcas boas no coração ✨</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#10</div>
-                            <div class="slot-name">Presença Marcante</div>
-                            <div class="slot-role">Encontros inesquecíveis com pessoas inestimáveis 🌟</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 2</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 3: PASSEIOS -->
-            <div class="page page-left">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">PASSEIOS</span>
-                        <h3 class="page-title">Caminhos & Lugares</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#11</div>
-                            <div class="slot-name">Dia De Festa</div>
-                            <div class="slot-role">Celebrando a vida e construindo histórias inesquecíveis 🚗</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#12</div>
-                            <div class="slot-name">Dias De Sol</div>
-                            <div class="slot-role">Aproveitando os bons momentos na melhor companhia 🏖️</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#13</div>
-                            <div class="slot-name">Reunião Familiar</div>
-                            <div class="slot-role">Encontros queridos que ficam eternizados na memória ☕</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#14</div>
-                            <div class="slot-name">Novos Caminhos</div>
-                            <div class="slot-role">Colecionando experiências e sorrisos pelo caminho 🗺️</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#15</div>
-                            <div class="slot-name">Gratidão Pela Vida</div>
-                            <div class="slot-role">Agradecendo por cada presença importante na nossa história 🌅</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 3</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 4: INSTANTES -->
-            <div class="page page-right">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">INSTANTES</span>
-                        <h3 class="page-title">Pequenos Grandes Momentos</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#16</div>
-                            <div class="slot-name">Tardes De Paz</div>
-                            <div class="slot-role">Descontraindo e aproveitando a felicidade de estar junto 🛋️</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#17</div>
-                            <div class="slot-name">União & Festa</div>
-                            <div class="slot-role">Festa, convivência e motivos de sobra para comemorar 🎈</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#18</div>
-                            <div class="slot-name">Bons Encontros</div>
-                            <div class="slot-role">Conversas sinceras, sorrisos e a leveza da vida 💬</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#19</div>
-                            <div class="slot-name">Alegria De Viver</div>
-                            <div class="slot-role">A felicidade de festejar e abraçar quem amamos ☕</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#20</div>
-                            <div class="slot-name">Harmonia Familiar</div>
-                            <div class="slot-role">Reuniões de família, amigos e afetos verdadeiros 🎶</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 4</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 5: TRAJETÓRIA -->
-            <div class="page page-left">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">TRAJETÓRIA</span>
-                        <h3 class="page-title">A Trajetória Da Paula</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#21</div>
-                            <div class="slot-name">Caminhos Da Vida</div>
-                            <div class="slot-role">Pessoas e laços reais que acompanham essa história 🏠</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#22</div>
-                            <div class="slot-name">Vivências Especiais</div>
-                            <div class="slot-role">Lugares, festas e momentos marcantes vividos juntos ✈️</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#23</div>
-                            <div class="slot-name">Lembranças Eternas</div>
-                            <div class="slot-role">Recordações preciosas eternizadas com muito carinho 👵👴</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#24</div>
-                            <div class="slot-name">Sonhos & Conquistas</div>
-                            <div class="slot-role">Celebrando cada passo, cada aprendizado e cada vitória 🌈</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#25</div>
-                            <div class="slot-name">Família & Amigos</div>
-                            <div class="slot-role">Sentimentos puros e laços fortes que nos unem a você 👨‍👩‍👧‍👦</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 5</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 6: CARINHO -->
-            <div class="page page-right">
-                <div class="page-content">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">CARINHO</span>
-                        <h3 class="page-title">Sentimentos Do Coração</h3>
-                    </div>
-                    <div class="stickers-grid">
-                        <div class="sticker-slot">
-                            <div class="slot-number">#26</div>
-                            <div class="slot-name">Cuidado & Apoio</div>
-                            <div class="slot-role">Apoio constante e a certeza de ter com quem contar 🤝</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#27</div>
-                            <div class="slot-name">Achego & Acolhimento</div>
-                            <div class="slot-role">Pessoas que transmitem abrigo, paz e serenidade ⚓</div>
-                        </div>
-                        <div class="sticker-slot special-slot">
-                            <div class="slot-number">#28</div>
-                            <div class="slot-name">Amor De Família</div>
-                            <div class="slot-role">O valor imensurável da família, dos amigos e de quem te ama ❤️</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#29</div>
-                            <div class="slot-name">Celebrando A Paula</div>
-                            <div class="slot-role">Homenageando quem torna o nosso mundo mais feliz 🎉</div>
-                        </div>
-                        <div class="sticker-slot">
-                            <div class="slot-number">#30</div>
-                            <div class="slot-name">Laços Para Sempre</div>
-                            <div class="slot-role">Construindo e guardando as memórias mais lindas da vida 💫</div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 6</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 7: CELEBRAÇÃO -->
-            <div class="page page-left romantic-page">
-                <div class="page-content glass-card">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">CELEBRAÇÃO</span>
-                        <h3 class="page-title playfair-title">Tempo De Comemorar</h3>
-                    </div>
-                    <div class="special-moment-box">
-                        <!-- Relógio de Tempo -->
-                        <div class="love-timer-card">
-                            <div class="timer-title">🎂 CELEBRANDO O ANIVERSÁRIO DA PAULA HÁ...</div>
-                            <div class="timer-display" id="love-timer">
-                                <div class="time-unit"><span id="timer-years">0</span><small>Anos</small></div>
-                                <div class="time-unit"><span id="timer-days">0</span><small>Dias</small></div>
-                                <div class="time-unit"><span id="timer-hours">0</span><small>Horas</small></div>
-                                <div class="time-unit"><span id="timer-minutes">0</span><small>Min</small></div>
-                                <div class="time-unit"><span id="timer-seconds">0</span><small>Seg</small></div>
-                            </div>
-                        </div>
-
-                        <div class="timer-quote">
-                            <p>"Celebrar o aniversário da Paula é comemorar a vida, a alegria e a felicidade de reunir a família e os amigos em volta de quem a gente tanto ama."</p>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 7</div>
-                </div>
-            </div>
-
-            <!-- PAGINA 8: DESTAQUE -->
-            <div class="page page-right romantic-page">
-                <div class="page-content glass-card">
-                    <div class="page-header">
-                        <span class="tech-badge badge-love">DESTAQUE</span>
-                        <h3 class="page-title playfair-title">Foto Especial</h3>
-                    </div>
-                    <div class="special-moment-box">
-                        <div class="photo-placeholder polaroid-frame" id="hero-photo-placeholder" title="Clique para ver a foto em tamanho grande">
-                            <span class="heart-icon">💖</span>
-                            <p class="photo-text">Foto Especial</p>
-                            <span class="polaroid-caption">Paula ❤️</span>
-                        </div>
-                        <div class="scratch-card-container">
-                            <div class="scratch-card-header">✨ SURPRESA: RASPE AQUI COM O DEDO!</div>
-                            <div class="scratch-box">
-                                <div class="scratch-secret">
-                                    <span>🎁 VALE 1 DIA DE MUITA FESTA, ALEGRIA & ABRAÇOS COM QUEM VOCÊ AMA ❤️</span>
-                                </div>
-                                <canvas id="scratch-canvas" width="280" height="65"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="page-footer">Pág. 8</div>
-                </div>
-            </div>
-
-            <!-- PAGINA CONTRACAPA FINAL: DEDICATÓRIA DE ANIVERSÁRIO -->
-            <div class="page page-cover-back">
-                <div class="page-content cover-back-content">
-                    <div class="cover-back-header">
-                        <h2>CARTA DE ANIVERSÁRIO</h2>
-                        <span class="cover-inside-title">Para a Paula ❤️</span>
-                    </div>
-                    <div class="cover-back-body">
-                        <div class="birthday-letter">
-                            <p class="letter-p">
-                                Paula, hoje o dia é todo seu! Celebrar o seu aniversário é celebrar a luz, a energia e a generosidade que você espalha por onde passa. Você tem a capacidade incrível de unir a família, alegrar os amigos e transformar qualquer momento em uma grande festa.
-                            </p>
-                            <p class="letter-p">
-                                Olhar para a sua trajetória e ver a pessoa maravilhosa que você é nos enche de orgulho e admiração. Mãe, filha, esposa, irmã, tia, amiga querida... você desempenha cada papel na vida com um coração enorme e com uma força inspiradora.
-                            </p>
-                            <p class="letter-p">
-                                Que o seu novo ano venha repleto de saúde, paz, gargalhadas, viagens e muitos sonhos realizados. Que você esteja sempre cercada por todo esse amor, carinho e pelas pessoas queridas que te admiram tanto. Feliz Aniversário!
-                            </p>
-                            <p class="signature-love">Com todo o carinho de todos que te amam! Happy Birthday! 🎉❤️✨</p>
-                        </div>
-                        <div class="barcode-container">
-                            <div class="barcode">
-                                <div class="bar"></div>
-                                <div class="bar thin"></div>
-                                <div class="bar"></div>
-                                <div class="bar thick"></div>
-                                <div class="bar thin"></div>
-                                <div class="bar"></div>
-                                <div class="bar thick"></div>
-                                <div class="bar"></div>
-                                <div class="bar thin"></div>
-                                <div class="bar thick"></div>
-                            </div>
-                            <span class="barcode-number">PAULA ❤️ 12-08-1996</span>
-                        </div>
-                    </div>
-                    <div class="cover-back-footer">
-                        <span>Edição Especial de Aniversário • Feito com Amor • 2026</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+    <div class="caption-box">
+      <div class="caption-label">Legenda</div>
+      <div class="caption-text" id="caption-text">-</div>
     </div>
-
-    <!-- Modal Lightbox para Zoom das Fotos -->
-    <div id="photo-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <button id="modal-close" class="modal-close-btn" aria-label="Fechar">&times;</button>
-            <div class="modal-img-wrapper">
-                <img id="modal-img" src="" alt="Foto em destaque" />
-            </div>
-            <h3 id="modal-title"></h3>
-            <p id="modal-desc"></p>
-        </div>
+    <div class="actions">
+      <button class="action-btn download" id="download-btn">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Baixar Mídia
+      </button>
+      <button class="action-btn" id="copy-btn">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" stroke="currentColor" stroke-width="2"/></svg>
+        Copiar legenda
+      </button>
+      <button class="action-btn" id="share-btn">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0-12l-4 4m4-4l4 4M6 17v2a2 2 0 002 2h8a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Compartilhar
+      </button>
     </div>
+  </div>
 
-    <!-- Canvas Confetti Library -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Page Flip Library -->
-    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-    <!-- Logic -->
-    <script src="app.js?v=2026_v99"></script>
+  <footer>
+    Funciona com Reels e vídeos públicos do Instagram.<br>
+    Desenvolvido para salvar e reaproveitar seus conteúdos.
+  </footer>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (let registration of registrations) {
+      registration.unregister();
+    }
+  });
+}
+
+const API_BASE = window.location.origin;
+
+const $ = (id) => document.getElementById(id);
+const linkInput = $('link-input');
+
+function setStatus(msg, isError = false) {
+  const el = document.getElementById('status');
+  if (el) {
+    el.textContent = msg;
+    if (isError) {
+      el.classList.add('error');
+    } else {
+      el.classList.remove('error');
+    }
+  }
+  console.log('[Status]', msg);
+}
+
+const resultEl = $('result');
+const previewVideo = $('preview-video');
+const previewImg = $('preview-img');
+const captionText = $('caption-text');
+let currentMediaUrl = null;
+let currentCaption = "";
+let isCurrentImage = false;
+
+$('paste-btn').addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    linkInput.value = text;
+  } catch (e) {
+    setStatus('Não consegui acessar a área de transferência — cole manualmente.', true);
+  }
+});
+
+$('fetch-btn').addEventListener('click', fetchMedia);
+linkInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchMedia(); });
+
+async function fetchMedia() {
+  const url = linkInput.value.trim();
+  if (!url || !/instagram.com/.test(url)) {
+    setStatus('Cole um link válido do Instagram.', true);
+    return;
+  }
+  setStatus('Buscando vídeo e áudio...');
+  resultEl.classList.remove('show');
+  $('fetch-btn').disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/extract`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Falha ao extrair a mídia.');
+
+    isCurrentImage = !!data.isImage || (!data.videoUrl && !!data.imageUrl);
+    currentMediaUrl = isCurrentImage ? (data.imageUrl || data.videoUrl) : (data.videoUrl || data.imageUrl);
+    currentCaption = data.caption || '(sem legenda)';
+    
+    const mediaTypeParam = isCurrentImage ? 'image' : 'video';
+    const proxyUrl = `${API_BASE}/download?url=${encodeURIComponent(currentMediaUrl)}&type=${mediaTypeParam}`;
+
+    if (isCurrentImage) {
+      previewVideo.style.display = 'none';
+      previewVideo.pause();
+      if (previewImg) {
+        previewImg.src = proxyUrl;
+        previewImg.style.display = 'block';
+      }
+      $('download-btn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Imagem';
+    } else {
+      if (previewImg) previewImg.style.display = 'none';
+      previewVideo.style.display = 'block';
+      previewVideo.src = proxyUrl;
+      $('download-btn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Vídeo';
+    }
+
+    captionText.textContent = currentCaption;
+    resultEl.classList.add('show');
+    setStatus('');
+  } catch (err) {
+    setStatus(err.message || 'Não consegui extrair essa mídia.', true);
+  } finally {
+    $('fetch-btn').disabled = false;
+  }
+}
+
+// Botão Baixar Mídia
+$('download-btn').addEventListener('click', async () => {
+  if (!currentMediaUrl) return;
+  const isImg = isCurrentImage;
+  setStatus(isImg ? 'Iniciando download da imagem...' : 'Iniciando download do vídeo...');
+  
+  const mediaTypeParam = isImg ? 'image' : 'video';
+  const ext = isImg ? 'jpg' : 'mp4';
+  const filename = `reelio-${Date.now()}.${ext}`;
+  const downloadProxyUrl = `${API_BASE}/download?url=${encodeURIComponent(currentMediaUrl)}&dl=1&type=${mediaTypeParam}`;
+
+  try {
+    const res = await fetch(downloadProxyUrl);
+    if (!res.ok) throw new Error('Falha ao baixar arquivo');
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+      setStatus('Download concluído com sucesso!');
+    }, 4000);
+  } catch (e) {
+    // Fallback de download direto se o fetch for bloqueado
+    const a = document.createElement('a');
+    a.href = downloadProxyUrl;
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => setStatus(''), 4000);
+  }
+});
+
+// Botão Copiar Legenda
+$('copy-btn').addEventListener('click', async () => {
+  if (!currentCaption) return;
+  try {
+    await navigator.clipboard.writeText(currentCaption);
+    setStatus('Legenda copiada com sucesso!');
+  } catch (e) {
+    setStatus('Erro ao copiar legenda.', true);
+  }
+});
+
+// Botão Compartilhar
+$('share-btn').addEventListener('click', async () => {
+  if (!currentMediaUrl) return;
+  
+  if (navigator.share) {
+    try {
+      setStatus('Baixando mídia para compartilhar...');
+      const mediaTypeParam = isCurrentImage ? 'image' : 'video';
+      const downloadProxyUrl = `${API_BASE}/download?url=${encodeURIComponent(currentMediaUrl)}&type=${mediaTypeParam}`;
+      const resp = await fetch(downloadProxyUrl);
+      const blob = await resp.blob();
+      const ext = isCurrentImage ? 'jpg' : 'mp4';
+      const mime = isCurrentImage ? 'image/jpeg' : 'video/mp4';
+      const file = new File([blob], `reelio-media.${ext}`, { type: mime });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Reelio Media',
+          text: currentCaption,
+          files: [file]
+        });
+        setStatus('Compartilhado!');
+        return;
+      } else {
+        await navigator.share({
+          title: 'Reelio Media',
+          text: `${currentCaption}\n\n${currentMediaUrl}`
+        });
+        setStatus('Link compartilhado!');
+        return;
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        copyMediaLink();
+      }
+      return;
+    }
+  }
+
+  copyMediaLink();
+});
+
+async function copyMediaLink() {
+  try {
+    await navigator.clipboard.writeText(currentMediaUrl);
+    setStatus('Link copiado para a área de transferência!');
+  } catch (e) {
+    setStatus('Não foi possível copiar o link.', true);
+  }
+}
+</script>
 </body>
-
 </html>

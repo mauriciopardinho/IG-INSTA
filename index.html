@@ -28,7 +28,7 @@
     --error: #ff4757;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }
 
   body {
     background: var(--bg-dark);
@@ -229,8 +229,22 @@ async function fetchMedia() {
     setStatus('Cole um link válido do Instagram.', true);
     return;
   }
-  setStatus('Buscando vídeo e áudio...');
+
+  // Isolamento estrito de estado para evitar vazamento entre links diferentes
+  currentMediaUrl = null;
+  currentCaption = "";
+  isCurrentImage = false;
+  previewVideo.pause();
+  previewVideo.removeAttribute('src');
+  previewVideo.load();
+  if (previewImg) {
+    previewImg.removeAttribute('src');
+    previewImg.style.display = 'none';
+  }
+  captionText.textContent = '-';
   resultEl.classList.remove('show');
+
+  setStatus('Buscando vídeo e áudio...');
   $('fetch-btn').disabled = true;
 
   try {
@@ -245,7 +259,7 @@ async function fetchMedia() {
 
     isCurrentImage = !!data.isImage || (!data.videoUrl && !!data.imageUrl);
     currentMediaUrl = isCurrentImage ? (data.imageUrl || data.videoUrl) : (data.videoUrl || data.imageUrl);
-    currentCaption = data.caption || '(sem legenda)';
+    currentCaption = data.caption || '';
     
     const mediaTypeParam = isCurrentImage ? 'image' : 'video';
     const proxyUrl = `${API_BASE}/download?url=${encodeURIComponent(currentMediaUrl)}&type=${mediaTypeParam}`;
@@ -265,7 +279,7 @@ async function fetchMedia() {
       $('download-btn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Baixar Vídeo';
     }
 
-    captionText.textContent = currentCaption;
+    captionText.textContent = currentCaption || '(sem legenda)';
     resultEl.classList.add('show');
     setStatus('');
   } catch (err) {
@@ -315,13 +329,42 @@ $('download-btn').addEventListener('click', async () => {
   }
 });
 
-// Botão Copiar Legenda
+// Botão Copiar Legenda com Preservação Rigorosa de Emojis e Quebras de Linha
 $('copy-btn').addEventListener('click', async () => {
   if (!currentCaption) return;
-  try {
-    await navigator.clipboard.writeText(currentCaption);
+  let copied = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(currentCaption);
+      copied = true;
+    } catch (e) {
+      copied = false;
+    }
+  }
+  if (!copied) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = currentCaption;
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.left = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      copied = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (err) {
+      copied = false;
+    }
+  }
+  if (copied) {
     setStatus('Legenda copiada com sucesso!');
-  } catch (e) {
+    setTimeout(() => {
+      const el = $('status');
+      if (el && el.textContent === 'Legenda copiada com sucesso!') el.textContent = '';
+    }, 3000);
+  } else {
     setStatus('Erro ao copiar legenda.', true);
   }
 });

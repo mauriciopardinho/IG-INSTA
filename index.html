@@ -412,10 +412,35 @@ $('share-btn').addEventListener('click', async () => {
 });
 
 async function copyMediaLink() {
-  try {
-    await navigator.clipboard.writeText(currentMediaUrl);
+  let copied = false;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(currentMediaUrl);
+      copied = true;
+    } catch (e) {}
+  }
+  if (!copied) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = currentMediaUrl;
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.left = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      copied = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (e) {}
+  }
+  if (copied) {
     setStatus('Link copiado para a área de transferência!');
-  } catch (e) {
+    setTimeout(() => {
+      const el = $('status');
+      if (el && el.textContent === 'Link copiado para a área de transferência!') el.textContent = '';
+    }, 3000);
+  } else {
     setStatus('Não foi possível copiar o link.', true);
   }
 }

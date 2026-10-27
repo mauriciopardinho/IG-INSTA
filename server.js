@@ -224,6 +224,21 @@ function cleanInstagramCaption(rawDesc) {
   return caption;
 }
 
+function cleanJsonUrl(rawUrl) {
+  if (!rawUrl) return '';
+  return rawUrl
+    .replace(/\\u0026/gi, '&')
+    .replace(/&amp;/gi, '&')
+    .replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+      try {
+        return String.fromCharCode(parseInt(hex, 16));
+      } catch (e) {
+        return match;
+      }
+    })
+    .replace(/\\/g, '');
+}
+
 /**
  * Método 0: Pure HTTP Embed Scraper (Ultrarrápido, ~300ms, sem overhead de Puppeteer)
  * O Embed do Instagram contém no próprio script JSON o video_url direto e display_url
@@ -253,7 +268,7 @@ async function extractDirectEmbed(shortcode, isReelLink) {
     const vidMatch = html.match(/video_url[\\]*":[\\]*"(https?:[^"\\]+)/i) ||
                      html.match(/video_url[\\]*":[\\]*"([^"]+)/i);
     if (vidMatch) {
-      videoUrl = vidMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&').replace(/\\/g, '');
+      videoUrl = cleanJsonUrl(vidMatch[1]);
     }
 
     // 2. Extrair display_url / imagem
@@ -262,7 +277,7 @@ async function extractDirectEmbed(shortcode, isReelLink) {
                      html.match(/display_url[\\]*":[\\]*"([^"]+)/i) ||
                      html.match(/class="EmbeddedMediaImage"[^>]*src="([^"]+)"/i);
     if (imgMatch) {
-      imageUrl = imgMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&').replace(/\\/g, '');
+      imageUrl = cleanJsonUrl(imgMatch[1]);
     }
 
     // 3. Extrair legenda fiel com quebras de linha e emojis
@@ -794,17 +809,19 @@ app.post('/extract', async (req, res) => {
     return res.status(400).json({ error: 'Envie um link válido do Instagram (ex: https://www.instagram.com/reel/... ou https://www.instagram.com/p/...)' });
   }
 
-  const match = url.match(/(?:reel|p|reels)\/([A-Za-z0-9_-]+)/);
+  const match = url.match(/(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)/i);
   const shortcode = match ? match[1] : null;
 
   if (!shortcode) {
     return res.status(400).json({ error: 'Não foi possível identificar o código do post/reel nesse link.' });
   }
 
-  console.log('[Extract API] Processando shortcode: ' + shortcode + ' para URL: ' + url);
+  const isReel = /\/reel\//i.test(url) || /\/reels\//i.test(url);
+  const canonicalUrl = `https://www.instagram.com/${isReel ? 'reel' : 'p'}/${shortcode}/`;
+  console.log('[Extract API] Processando shortcode: ' + shortcode + ' para URL: ' + canonicalUrl);
 
   try {
-    const result = await extractInstagramPost(shortcode, url);
+    const result = await extractInstagramPost(shortcode, canonicalUrl);
 
     if (result && (result.videoUrl || result.imageUrl)) {
       return res.json(result);

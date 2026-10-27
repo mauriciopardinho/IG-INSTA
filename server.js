@@ -61,7 +61,7 @@ setInterval(() => {
       extractionCache.delete(key);
     }
   }
-}, 5 * 60 * 1000);
+}, 5 * 60 * 1000).unref();
 
 // ==========================================
 // 2. NAVEGADOR PUPPETEER COM RESILIÊNCIA E AUTO-RECOVERY
@@ -224,9 +224,97 @@ function cleanInstagramCaption(rawDesc) {
   return caption;
 }
 
-// ==========================================
-// 4. MÉTODOS DE EXTRAÇÃO DE MÍDIA
-// ==========================================
+/**
+ * Método 0: Pure HTTP Embed Scraper (Ultrarrápido, ~300ms, sem overhead de Puppeteer)
+ * O Embed do Instagram contém no próprio script JSON o video_url direto e display_url
+ */
+async function extractDirectEmbed(shortcode, isReelLink) {
+  try {
+    const embedUrl = `https://www.instagram.com/p/${shortcode}/embed/captioned/`;
+    console.log('[DirectEmbed] Extraindo via HTTP embed direto:', embedUrl);
+    const res = await fetch(embedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    if (html.includes('link desta foto ou vídeo pode estar quebrado') || html.includes('Post não está disponível')) {
+      return { isNotFound: true, videoUrl: null, imageUrl: null, caption: '' };
+    }
+
+    let videoUrl = null;
+    let imageUrl = null;
+    let caption = '';
+
+    // 1. Extrair video_url com suporte a escape de barras e aspas
+    const vidMatch = html.match(/video_url[\\]*":[\\]*"(https?:[^"\\]+)/i) ||
+                     html.match(/video_url[\\]*":[\\]*"([^"]+)/i);
+    if (vidMatch) {
+      videoUrl = vidMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&').replace(/\\/g, '');
+    }
+
+    // 2. Extrair display_url / imagem
+    const imgMatch = html.match(/"display_url"\s*:\s*"([^"]+)"/i) ||
+                     html.match(/display_url[\\]*":[\\]*"(https?:[^"\\]+)/i) ||
+                     html.match(/display_url[\\]*":[\\]*"([^"]+)/i) ||
+                     html.match(/class="EmbeddedMediaImage"[^>]*src="([^"]+)"/i);
+    if (imgMatch) {
+      imageUrl = imgMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&').replace(/\\/g, '');
+    }
+
+    // 3. Extrair legenda fiel com quebras de linha e emojis
+    const captionBlockMatch = html.match(/class="Caption"[^>]*>([\s\S]*?)<\/div>/i);
+    if (captionBlockMatch) {
+      let rawCap = captionBlockMatch[1];
+      rawCap = rawCap.replace(/<a class="CaptionUsername"[^>]*>[\s\S]*?<\/a>/gi, '');
+      rawCap = rawCap.replace(/<[^>]*class="[^"]*(?:CaptionComments|CaptionTime|CaptionMeta|CaptionMore)[^"]*"[^>]*>[\s\S]*?<\/[a-z0-9]+>/gi, '');
+      rawCap = rawCap.replace(/<br\s*\/?>/gi, '\n');
+      rawCap = rawCap.replace(/<[^>]+>/g, '');
+      rawCap = rawCap.replace(/View (?:all )?[\d,.]+ comments/gi, '');
+      rawCap = rawCap.replace(/Ver todos os [\d,.]+ coment[áa]rios/gi, '');
+      caption = decodeInstagramText(rawCap).trim();
+    }
+
+    if (!caption) {
+      const scriptCapMatch = html.match(/"caption"\s*:\s*"([^"]+)"/i) || html.match(/"text"\s*:\s*"([^"]+)"/i);
+      if (scriptCapMatch) {
+        caption = decodeInstagramText(scriptCapMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')).trim();
+      }
+    }
+
+    // Se for link de Reel/Vídeo e não achou video_url, não retornar imagem falsa!
+    if (isReelLink && !videoUrl) {
+      return null;
+    }
+
+    const isVideo = isReelLink || !!videoUrl;
+    if (isVideo && videoUrl) {
+      console.log('[DirectEmbed SUCCESS] Vídeo extraído com sucesso em 300ms!');
+      return {
+        isNotFound: false,
+        videoUrl,
+        imageUrl,
+        isImage: false,
+        caption
+      };
+    } else if (!isReelLink && imageUrl) {
+      console.log('[DirectEmbed SUCCESS] Imagem extraída com sucesso em 300ms!');
+      return {
+        isNotFound: false,
+        videoUrl: null,
+        imageUrl,
+        isImage: true,
+        caption
+      };
+    }
+  } catch (err) {
+    console.log('[DirectEmbed Warning]:', err.message);
+  }
+  return null;
+}
 
 /**
  * Método 1: Puppeteer Embed Scraper
@@ -258,8 +346,17 @@ async function extractFromPuppeteerEmbed(shortcode, isReelLink) {
     console.log('[PuppeteerEmbed] Acessando:', embedUrl);
 
     await page.goto(embedUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    // Aguardar hidratação leve do DOM
-    await new Promise(r => setTimeout(r, 2500));
+    
+    // Aguardar o elemento aparecer no DOM em vez de timer fixo
+    try {
+      if (isReelLink) {
+        await page.waitForSelector('video', { timeout: 6000 });
+      } else {
+        await page.waitForSelector('img.EmbeddedMediaImage, article img', { timeout: 4000 });
+      }
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 1500));
+    }
 
     const domData = await page.evaluate(() => {
       const title = document.title || '';
@@ -543,6 +640,18 @@ async function extractInstagramPost(shortcode, originalUrl) {
   const extractionPromise = (async () => {
     const isReelLink = /\/reel\//i.test(originalUrl) || /\/reels\//i.test(originalUrl);
     console.log(`[Extract Orchestrator] Processando ${shortcode} (isReel: ${isReelLink})`);
+
+    // Etapa 0: Pure HTTP Embed Scraper (Ultrarrápido, ~300ms, sem overhead de Puppeteer)
+    try {
+      const directEmbedRes = await extractDirectEmbed(shortcode, isReelLink);
+      if (directEmbedRes && (directEmbedRes.videoUrl || directEmbedRes.imageUrl)) {
+        setCachedExtraction(shortcode, directEmbedRes);
+        return directEmbedRes;
+      }
+      if (directEmbedRes && directEmbedRes.isNotFound) return directEmbedRes;
+    } catch (e) {
+      console.log('[Orchestrator Step 0 Error]:', e.message);
+    }
 
     // Etapa 1: Puppeteer Embed Scraper (Extremamente rápido e imune a bloqueios de login)
     try {

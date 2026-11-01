@@ -161,6 +161,14 @@
     return `/download?url=${encodeURIComponent(url)}&type=${type}${opts.dl ? '&dl=1' : ''}${name}`;
   }
 
+  async function toJpeg(blob) {
+    if (blob.type === 'image/jpeg') return blob;
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0);
+    return await new Promise((ok, no) => c.toBlob((x) => (x ? ok(x) : no(new Error('falha'))), 'image/jpeg', 0.95));
+  }
+
   function buildItem(item, idx, total, shortcode) {
     const fig = document.createElement('figure'); fig.className = 'item';
     const media = document.createElement('div'); media.className = 'media';
@@ -192,6 +200,18 @@
     a.innerHTML = DL_ICON; a.appendChild(document.createTextNode(total > 1 ? `${label} ${idx + 1} de ${total}` : label));
     a.href = proxy(item.url, item.type, { dl: true, name: `reelio-${shortcode}${total > 1 ? '-' + (idx + 1) : ''}` });
     a.setAttribute('download', '');
+    if (!isVideo) {
+      // Instagram às vezes entrega WebP: converte para JPEG aqui no navegador antes de salvar.
+      a.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        try {
+          const blob = await toJpeg(await (await fetch(proxy(item.url, 'image'))).blob());
+          const u = URL.createObjectURL(blob); const d = document.createElement('a');
+          d.href = u; d.download = `reelio-${shortcode}${total > 1 ? '-' + (idx + 1) : ''}.jpg`;
+          document.body.appendChild(d); d.click(); d.remove(); setTimeout(() => URL.revokeObjectURL(u), 10000);
+        } catch { window.location.href = a.href; }
+      });
+    }
     fig.appendChild(a);
     return fig;
   }

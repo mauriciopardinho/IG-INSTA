@@ -115,7 +115,7 @@ test('reel sem arquivo de vídeo: NUNCA devolve a capa como se fosse o vídeo', 
   assert.equal(status, 422);
   assert.equal(body.items, undefined);
   assert.match(body.error, /vídeo/i);
-  assert.ok(Array.isArray(body.trace) && body.trace.length === 3);
+  assert.ok(Array.isArray(body.trace) && body.trace.length === 4);
 });
 
 test('embed sabe que é vídeo mas sem arquivo: pega o arquivo no GraphQL e mantém a legenda do embed', async () => {

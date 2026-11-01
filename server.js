@@ -76,6 +76,27 @@ function scanString(html, key) {
   return m && m[1] ? cleanUrl(m[1]) : null;
 }
 
+/** Procura o arquivo de vídeo em qualquer formato que o Instagram use na página. */
+function scanVideoUrl(html) {
+  const vv = html.match(/\\*"video_versions\\*"\s*:\s*\[[^\]]{0,6000}?\\*"url\\*"\s*:\s*\\*"([^"]+?)\\*"/);
+  if (vv) return cleanUrl(vv[1]);
+  for (const k of ['video_url', 'playable_url_quality_hd', 'playable_url', 'contentUrl']) {
+    const v = scanString(html, k);
+    if (v && /^https?:/i.test(v)) return v;
+  }
+  const og = metaContent(html, 'og:video:secure_url') || metaContent(html, 'og:video');
+  if (og) return cleanUrl(og);
+  for (const m of eachTag(html, 'video')) { const a = tagAttrs(m[0]); if (a.src && /^https?:/i.test(a.src)) return cleanUrl(a.src); }
+  const mp4 = html.match(/https?:[\\\/]+[^"'\s<>]{5,600}?\.mp4[^"'\s<>]{0,600}/);
+  return mp4 ? cleanUrl(mp4[0]) : null;
+}
+
+/** Resumo do que existe na página (vai para os detalhes técnicos, para diagnosticar bloqueios). */
+function pageHints(html) {
+  const has = (re) => (re.test(html) ? 1 : 0);
+  return `${html.length}b video_url:${has(/video_url/)} versions:${has(/video_versions/)} mp4:${has(/\.mp4/)} login:${has(/accounts\/login|loginForm|Log in|Entrar/i)}`;
+}
+
 /** Percorre as tags <tag ...> de forma linear (sem regex que varre a página inteira). */
 function* eachTag(html, tagName) {
   const re = new RegExp('<' + tagName + '\\b[^>]*>', 'gi');
@@ -195,7 +216,7 @@ function bestImageUrl(n) {
   const ok = list.filter((c) => c.url);
   const good = ok.filter((c) => !isCroppedUrl(c.url) && !isTinyUrl(c.url));
   const pool = good.length ? good : ok;
-  pool.sort((a, b) => b.w - a.w);
+  pool.sort((a, b) => (b.w - a.w) || (/webp/i.test(a.url) - /webp/i.test(b.url)));
   return pool[0] ? cleanUrl(pool[0].url) : null;
 }
 
@@ -273,7 +294,7 @@ function parseEmbed(html, parsed) {
     : { items: [], videoHint: false, caption: '', username: '', authoritative: false };
 
   if (!r.items.length) {
-    const vurl = scanString(html, 'video_url');
+    const vurl = scanVideoUrl(html);
     const img = embedImage(html) || scanString(html, 'display_url');
     const strongVideo = !!vurl || STRONG_VIDEO_RE.test(html);
     if (vurl) r.items = [{ type: 'video', url: vurl, thumb: img }];
@@ -285,7 +306,7 @@ function parseEmbed(html, parsed) {
   if (!r.items.length && !r.videoHint && !r.caption && NOT_FOUND_RE.test(html)) {
     return { ok: false, notFound: true, note: 'embed informa que o post não está disponível', ...r };
   }
-  return { ok: r.items.length > 0, ...r, note: node ? 'dados estruturados' : 'HTML do embed' };
+  return { ok: r.items.length > 0, ...r, note: (node ? 'dados estruturados' : 'HTML do embed') + (r.items.length ? '' : ' | ' + pageHints(html)) };
 }
 
 async function viaEmbed(parsed) {
@@ -295,6 +316,41 @@ async function viaEmbed(parsed) {
   if (res.status !== 200) return { ok: false, status: res.status, note: `HTTP ${res.status}` };
   if (res.text.length < 500) return { ok: false, status: 200, note: 'resposta vazia' };
   return { status: 200, ...parseEmbed(res.text, parsed) };
+}
+
+// ---------------------------------------------------------------------------
+// Sessão anônima: abre a página como um navegador, guarda cookies e o token LSD
+// ---------------------------------------------------------------------------
+function getSession(parsed) {
+  if (!parsed._session) {
+    parsed._session = (async () => {
+      const res = await httpText(`${IG_BASE}/${parsed.kind}/${parsed.shortcode}/`, {
+        headers: { ...NAV_HEADERS, 'User-Agent': UA_DESKTOP, 'Accept': 'text/html,application/xhtml+xml,*/*;q=0.8', 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
+      });
+      const cookies = (res.headers.getSetCookie ? res.headers.getSetCookie() : []).map((c) => c.split(';')[0]);
+      const lsd = (res.text.match(/"LSD",\[\],\{"token":"([^"]+)"/) || [])[1] || '';
+      const csrf = ((cookies.find((c) => c.startsWith('csrftoken=')) || '').split('=')[1]) || '';
+      return { status: res.status, html: res.text, lsd, csrf, cookie: cookies.join('; ') };
+    })().catch(() => ({ status: 0, html: '', lsd: '', csrf: '', cookie: '' }));
+  }
+  return parsed._session;
+}
+
+// ---------------------------------------------------------------------------
+// Método 4 — Página completa vista como navegador (traz o vídeo em muitos reels)
+// ---------------------------------------------------------------------------
+async function viaPage(parsed) {
+  const ses = await getSession(parsed);
+  if (ses.status !== 200) return { ok: false, status: ses.status, note: ses.status ? `HTTP ${ses.status}` : 'sem resposta' };
+  const html = ses.html;
+  const vurl = scanVideoUrl(html);
+  const ogImage = metaContent(html, 'og:image');
+  const caption = captionFromOgDescription(metaContent(html, 'og:description') || metaContent(html, 'description'));
+  const ogType = metaContent(html, 'og:type') || '';
+  const videoHint = !!vurl || /video/i.test(ogType);
+  const items = vurl ? [{ type: 'video', url: vurl, thumb: ogImage ? cleanUrl(ogImage) : null }] : [];
+  return { status: 200, ok: items.length > 0, items, caption, username: '', videoHint, authoritative: false,
+    note: 'página completa | ' + pageHints(html) };
 }
 
 // ---------------------------------------------------------------------------
@@ -310,11 +366,14 @@ async function viaGraphql(parsed) {
     lsd: 'AVqbxe3J_YA', fb_api_caller_class: 'RelayModern', fb_api_req_friendly_name: friendly,
     variables, server_timestamps: 'true', doc_id: IG_DOC_ID,
   }).toString();
+  const ses = await getSession(parsed);
+  const lsd = ses.lsd || 'AVqbxe3J_YA';
   const res = await httpText(`${IG_BASE}/graphql/query`, {
-    method: 'POST', body,
+    method: 'POST', body: body.replace('lsd=AVqbxe3J_YA', 'lsd=' + encodeURIComponent(lsd)),
     headers: {
+      ...(ses.cookie ? { Cookie: ses.cookie } : {}), ...(ses.csrf ? { 'X-CSRFToken': ses.csrf } : {}),
       'User-Agent': UA_DESKTOP, 'Content-Type': 'application/x-www-form-urlencoded',
-      'X-FB-LSD': 'AVqbxe3J_YA', 'X-IG-App-ID': '936619743392459', 'X-ASBD-ID': '129477',
+      'X-FB-LSD': lsd, 'X-IG-App-ID': '936619743392459', 'X-ASBD-ID': '129477',
       'X-FB-Friendly-Name': friendly, 'Sec-Fetch-Site': 'same-origin',
       'Origin': IG_BASE, 'Referer': `${IG_BASE}/p/${parsed.shortcode}/`, 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
     },
@@ -337,7 +396,7 @@ async function viaOpenGraph(parsed) {
   });
   if (res.status !== 200) return { ok: false, status: res.status, note: `HTTP ${res.status}` };
   const html = res.text;
-  const ogVideo = metaContent(html, 'og:video:secure_url') || metaContent(html, 'og:video') || scanString(html, 'video_url');
+  const ogVideo = metaContent(html, 'og:video:secure_url') || metaContent(html, 'og:video') || scanVideoUrl(html);
   const ogImage = metaContent(html, 'og:image');
   const ogType = metaContent(html, 'og:type') || '';
   const caption = captionFromOgDescription(metaContent(html, 'og:description') || metaContent(html, 'description'));
@@ -372,6 +431,7 @@ async function runExtraction(parsed, trace) {
     ['embed', viaEmbed],
     ['graphql', viaGraphql],
     ['opengraph', viaOpenGraph],
+    ['pagina', viaPage],
   ];
   let caption = '', captionAuth = false, username = '', best = null, tentative = null, notFound = false;
   let needVideo = parsed.videoHint;
@@ -463,7 +523,7 @@ async function handleDownload(req, res, q) {
   const ctrl = new AbortController();
   res.on('close', () => ctrl.abort());
   const headerTimer = setTimeout(() => ctrl.abort(), 25000);
-  const headers = { 'User-Agent': UA_DESKTOP, 'Accept': '*/*', 'Referer': 'https://www.instagram.com/' };
+  const headers = { 'User-Agent': UA_DESKTOP, 'Accept': wantVideo ? '*/*' : 'image/jpeg,image/png;q=0.9,*/*;q=0.5', 'Referer': 'https://www.instagram.com/' };
   if (req.headers.range) headers.Range = req.headers.range;
 
   let up;

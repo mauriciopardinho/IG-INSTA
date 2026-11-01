@@ -219,12 +219,13 @@
     setStatus('Buscando mídia e legenda…', 'loading');
     const wake = setTimeout(() => setStatus('Ainda buscando… o servidor gratuito pode levar até 1 minuto para acordar.', 'loading'), 8000);
     try {
-      const res = await fetch('/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+      const ctrl = new AbortController(); const abortT = setTimeout(() => ctrl.abort(), 45000);
+      const res = await fetch('/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }), signal: ctrl.signal }).finally(() => clearTimeout(abortT));
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setStatus(data.error || 'Não consegui extrair a mídia desse link.', 'error'); setTech(data.trace); return; }
       setStatus(''); render(data);
     } catch (err) {
-      setStatus('Não consegui falar com o servidor. Verifique sua conexão e tente de novo.', 'error');
+      setStatus(err && err.name === 'AbortError' ? 'O servidor não respondeu em 45 segundos. Tente de novo; se repetir, abra /diag no endereço do site.' : 'Não consegui falar com o servidor. Verifique sua conexão e tente de novo.', 'error');
       setTech([{ method: 'rede', note: String(err && err.message || err) }]);
     } finally { clearTimeout(wake); goBtn.disabled = false; }
   }

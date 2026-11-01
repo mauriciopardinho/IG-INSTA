@@ -29,6 +29,10 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 
 const UA_DESKTOP =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+const NAV_HEADERS = {
+  'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'none', 'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1', 'Cache-Control': 'max-age=0',
+};
 const UA_CRAWLER = 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)';
 
 // ---------------------------------------------------------------------------
@@ -144,7 +148,7 @@ function parseInstagramUrl(raw) {
 // ---------------------------------------------------------------------------
 // HTTP
 // ---------------------------------------------------------------------------
-async function httpText(url, { method = 'GET', headers = {}, body, timeout = 12000, redirect = 'follow' } = {}) {
+async function httpText(url, { method = 'GET', headers = {}, body, timeout = 9000, redirect = 'follow' } = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
   try {
@@ -268,7 +272,7 @@ function parseEmbed(html, parsed) {
 
 async function viaEmbed(parsed) {
   const res = await httpText(`${IG_BASE}/p/${parsed.shortcode}/embed/captioned/`, {
-    headers: { 'User-Agent': UA_DESKTOP, 'Accept': 'text/html,*/*;q=0.8', 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
+    headers: { ...NAV_HEADERS, 'User-Agent': UA_DESKTOP, 'Accept': 'text/html,application/xhtml+xml,*/*;q=0.8', 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
   });
   if (res.status !== 200) return { ok: false, status: res.status, note: `HTTP ${res.status}` };
   if (res.text.length < 500) return { ok: false, status: 200, note: 'resposta vazia' };
@@ -354,10 +358,14 @@ async function runExtraction(parsed, trace) {
   let caption = '', captionAuth = false, username = '', best = null, tentative = null, notFound = false;
   let needVideo = parsed.videoHint;
 
-  for (const [name, fn] of methods) {
+  // Os 3 métodos começam juntos (resposta mais rápida); o resultado é avaliado na ordem de prioridade.
+  const started = methods.map(([name, fn]) => {
     const t0 = Date.now();
-    let r;
-    try { r = await fn(parsed); } catch (e) { r = { ok: false, note: e.name === 'AbortError' ? 'tempo esgotado' : e.message }; }
+    const p = Promise.resolve().then(() => fn(parsed)).catch((e) => ({ ok: false, note: e.name === 'AbortError' ? 'sem resposta do Instagram (tempo esgotado)' : `${e.message}${e.cause && e.cause.code ? ' [' + e.cause.code + ']' : ''}` }));
+    return { name, t0, p };
+  });
+  for (const { name, t0, p } of started) {
+    const r = await p;
     r.items = r.items || [];
     trace.push({ method: name, ms: Date.now() - t0, status: r.status || null, items: r.items.length, video: !!r.videoHint, note: r.note || '' });
 
@@ -393,7 +401,11 @@ async function extractPost(parsed, trace) {
   const cached = getCached(parsed.shortcode);
   if (cached) { trace.push({ method: 'cache', ms: 0, note: 'resultado em cache' }); return { status: 200, body: cached }; }
   if (inflight.has(parsed.shortcode)) return inflight.get(parsed.shortcode);
-  const p = runExtraction(parsed, trace).then((out) => {
+  const deadline = new Promise((resolve) => setTimeout(() => {
+    trace.push({ method: 'prazo', note: 'limite de 25s atingido sem resposta completa' });
+    resolve({ status: 504, body: { error: 'O Instagram não respondeu a tempo para o servidor (provável bloqueio). Veja os detalhes técnicos.' } });
+  }, 25000).unref());
+  const p = Promise.race([runExtraction(parsed, trace), deadline]).then((out) => {
     if (out.status === 200) cache.set(parsed.shortcode, { at: Date.now(), data: out.body });
     return out;
   }).finally(() => inflight.delete(parsed.shortcode));
@@ -518,6 +530,39 @@ async function handleExtract(req, res, debug) {
   sendJson(res, out.status, out.body);
 }
 
+async function handleDiag(req, res, q) {
+  if (limited('g:' + clientIp(req), 10, 60000)) return sendJson(res, 429, { error: 'Muitas requisições.' });
+  const parsed = parseInstagramUrl(q.get('url') || 'https://www.instagram.com/p/De-Tehfx2tr/');
+  if (!parsed || parsed.share) return sendJson(res, 400, { error: 'Use /diag?url=<link de post ou reel>' });
+  const probe = async (name, url, headers, opts = {}) => {
+    const t0 = Date.now();
+    try {
+      const r = await httpText(url, { headers, ...opts });
+      return { probe: name, status: r.status, ms: Date.now() - t0, bytes: r.text.length,
+        redirectParaLogin: /accounts\/login/i.test(r.headers.get('location') || ''),
+        temLogin: /accounts\/login|loginForm|"require_login"/i.test(r.text),
+        temContextJSON: /contextJSON/.test(r.text), temVideoUrl: /video_url/.test(r.text),
+        temOgImage: /og:image/.test(r.text), trecho: r.text.slice(0, 160).replace(/\s+/g, ' ') };
+    } catch (e) {
+      return { probe: name, ms: Date.now() - t0, erro: e.name === 'AbortError' ? 'sem resposta em 9s' : e.message, causa: e.cause && (e.cause.code || e.cause.message) };
+    }
+  };
+  const trace = [];
+  const [home, embed, og, run] = await Promise.all([
+    probe('instagram_home', IG_BASE + '/', { ...NAV_HEADERS, 'User-Agent': UA_DESKTOP }),
+    probe('embed', `${IG_BASE}/p/${parsed.shortcode}/embed/captioned/`, { ...NAV_HEADERS, 'User-Agent': UA_DESKTOP }),
+    probe('opengraph', `${IG_BASE}/${parsed.kind}/${parsed.shortcode}/`, { 'User-Agent': UA_CRAWLER }),
+    runExtraction(parsed, trace).catch((e) => ({ status: 500, body: { error: e.message } })),
+  ]);
+  const out = {
+    node: process.version, temCookie: !!IG_COOKIE, docId: IG_DOC_ID, link: parsed.shortcode,
+    sondas: [home, embed, og],
+    extracao: { status: run.status, tipo: run.body.type || null, itens: (run.body.items || []).map((i) => i.type), erro: run.body.error || null, legenda: (run.body.caption || '').slice(0, 80), trace },
+  };
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+  res.end(JSON.stringify(out, null, 2));
+}
+
 function serveIndex(res) {
   fs.readFile(path.join(__dirname, 'index.html'), (err, buf) => {
     if (err) return sendJson(res, 500, { error: 'index.html não encontrado' });
@@ -536,6 +581,7 @@ const server = http.createServer((req, res) => {
     switch (route) {
       case 'GET /': case 'GET /index.html': return serveIndex(res);
       case 'GET /health': return sendJson(res, 200, { ok: true });
+      case 'GET /diag': return handleDiag(req, res, url.searchParams);
       case 'GET /favicon.ico': res.writeHead(204); return res.end();
       case 'POST /extract': return handleExtract(req, res, url.searchParams.get('debug') === '1');
       case 'GET /download':

@@ -205,3 +205,35 @@ test('o servidor não expõe o código-fonte (nada de servir a pasta inteira)', 
   assert.equal((await fetch(base + '/')).status, 200);
   assert.equal((await fetch(base + '/health')).status, 200);
 });
+
+test('app Android: serve assetlinks.json em /.well-known, mas nunca chaves/keystore/apk', async () => {
+  const fs = require('node:fs'); const path = require('node:path');
+  const f = path.join(__dirname, 'assetlinks.json');
+  const existed = fs.existsSync(f);
+  if (!existed) fs.writeFileSync(f, '[{"relation":["delegate_permission/common.handle_all_urls"]}]');
+  try {
+    const r = await fetch(base + '/.well-known/assetlinks.json');
+    assert.equal(r.status, 200);
+    assert.match(r.headers.get('content-type'), /application\/json/);
+    for (const p of ['/signing.keystore', '/signing-key-info.txt', '/Reelio.apk', '/Reelio.aab']) {
+      assert.equal((await fetch(base + p)).status, 404, p);
+    }
+  } finally { if (!existed) fs.unlinkSync(f); }
+});
+
+test('desempenho: página enorme do Instagram não trava o servidor (regex em tempo linear)', () => {
+  // ~2 MB de JSON com muitas aspas e sem ">" — o pior caso que travava a versão anterior
+  let h = '<html><head>';
+  for (let i = 0; i < 60; i++) h += `<meta property="al:x${i}" content="valor ${i}" /><meta content="c${i}" name="n${i}">`;
+  h += '<meta property="og:description" content="1 likes - u on May 1, 2026: &quot;oi&quot;." /></head><body><script>';
+  const chunk = '{"a":"bc","k":[1,2,3],"u":"https:\\/\\/x.com\\/y?a=1","t":"texto com maior"},';
+  while (h.length < 2 * 1024 * 1024) h += chunk;
+  h += '</script><div class="Caption"><a class="CaptionUsername">u</a><br/>Legenda ok</div></body></html>';
+  const t0 = Date.now();
+  assert.equal(app.metaContent(h, 'og:video:secure_url'), null);
+  assert.equal(app.metaContent(h, 'og:description'), '1 likes - u on May 1, 2026: "oi".');
+  assert.equal(app.parseEmbedCaption(h), 'Legenda ok');
+  const r = app.parseEmbed(h, { videoHint: false });
+  assert.ok(r);
+  assert.ok(Date.now() - t0 < 1500, `levou ${Date.now() - t0}ms`);
+});

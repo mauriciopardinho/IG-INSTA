@@ -76,13 +76,26 @@ function scanString(html, key) {
   return m && m[1] ? cleanUrl(m[1]) : null;
 }
 
-/** Lê <meta property="x" content="y"> em qualquer ordem de atributos. */
+/** Percorre as tags <tag ...> de forma linear (sem regex que varre a página inteira). */
+function* eachTag(html, tagName) {
+  const re = new RegExp('<' + tagName + '\\b[^>]*>', 'gi');
+  let m;
+  while ((m = re.exec(html))) if (m[0].length <= 4000) yield m;
+}
+function tagAttrs(tag) {
+  const attrs = {};
+  tag.replace(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g, (_, k, a, b) => { attrs[k.toLowerCase()] = a !== undefined ? a : b; return ''; });
+  return attrs;
+}
+
+/** Lê <meta property="x" content="y"> em qualquer ordem de atributos (tempo linear). */
 function metaContent(html, prop) {
-  const p = prop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re1 = new RegExp('<meta[^>]+(?:property|name)=["\']' + p + '["\'][^>]*?content=(["\'])([\\s\\S]*?)\\1', 'i');
-  const re2 = new RegExp('<meta[^>]+content=(["\'])([\\s\\S]*?)\\1[^>]*?(?:property|name)=["\']' + p + '["\']', 'i');
-  const m = html.match(re1) || html.match(re2);
-  return m ? decodeEntities(m[2]) : null;
+  const want = prop.toLowerCase();
+  for (const m of eachTag(html, 'meta')) {
+    const a = tagAttrs(m[0]);
+    if (a.content !== undefined && ((a.property || '').toLowerCase() === want || (a.name || '').toLowerCase() === want)) return decodeEntities(a.content);
+  }
+  return null;
 }
 
 /**
@@ -99,7 +112,10 @@ function captionFromOgDescription(desc) {
 
 /** Extrai a legenda do bloco <div class="Caption"> do embed (respeitando divs aninhadas). */
 function parseEmbedCaption(html) {
-  const open = html.match(/<div[^>]*class=["'][^"']*\bCaption\b[^"']*["'][^>]*>/i);
+  let open = null;
+  for (const m of eachTag(html, 'div')) {
+    if ((tagAttrs(m[0]).class || '').split(/\s+/).includes('Caption')) { open = m; break; }
+  }
   if (!open) return '';
   const openEnd = open.index + open[0].length;
   const re = /<(\/?)div\b[^>]*>/gi;
@@ -109,9 +125,10 @@ function parseEmbedCaption(html) {
     depth += m[1] ? -1 : 1;
     if (depth === 0) { end = m.index; break; }
   }
-  let inner = html.slice(openEnd, end);
-  const cut = inner.search(/<div[^>]*class=["'][^"']*Caption(?:Comments|Time|Meta|More)[^"']*["']/i);
-  if (cut >= 0) inner = inner.slice(0, cut);
+  let inner = html.slice(openEnd, Math.min(end, openEnd + 20000));
+  for (const m of eachTag(inner, 'div')) {
+    if (/\bCaption(?:Comments|Time|Meta|More)\b/.test(tagAttrs(m[0]).class || '')) { inner = inner.slice(0, m.index); break; }
+  }
   inner = inner
     .replace(/<a[^>]*class=["'][^"']*CaptionUsername[^"']*["'][^>]*>[\s\S]*?<\/a>/i, '')
     .replace(/<br\s*\/?>/gi, '\n')
@@ -155,7 +172,8 @@ async function httpText(url, { method = 'GET', headers = {}, body, timeout = 900
     const h = { ...headers };
     if (IG_COOKIE && url.startsWith(IG_BASE)) h.Cookie = IG_COOKIE;
     const res = await fetch(url, { method, headers: h, body, signal: ctrl.signal, redirect });
-    const text = redirect === 'manual' ? '' : await res.text();
+    let text = redirect === 'manual' ? '' : await res.text();
+    if (text.length > 3000000) text = text.slice(0, 3000000); // páginas gigantes: só o começo importa
     return { status: res.status, text, headers: res.headers };
   } finally {
     clearTimeout(timer);
@@ -563,6 +581,15 @@ async function handleDiag(req, res, q) {
   res.end(JSON.stringify(out, null, 2));
 }
 
+// Verificação do app Android (TWA/Google Play): o Android lê /.well-known/assetlinks.json
+function serveAssetLinks(res) {
+  fs.readFile(path.join(__dirname, 'assetlinks.json'), (err, buf) => {
+    if (err) return sendJson(res, 404, { error: 'Não encontrado.' });
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    res.end(buf);
+  });
+}
+
 function serveIndex(res) {
   fs.readFile(path.join(__dirname, 'index.html'), (err, buf) => {
     if (err) return sendJson(res, 500, { error: 'index.html não encontrado' });
@@ -581,6 +608,7 @@ const server = http.createServer((req, res) => {
     switch (route) {
       case 'GET /': case 'GET /index.html': return serveIndex(res);
       case 'GET /health': return sendJson(res, 200, { ok: true });
+      case 'GET /.well-known/assetlinks.json': case 'GET /assetlinks.json': return serveAssetLinks(res);
       case 'GET /diag': return handleDiag(req, res, url.searchParams);
       case 'GET /favicon.ico': res.writeHead(204); return res.end();
       case 'POST /extract': return handleExtract(req, res, url.searchParams.get('debug') === '1');
@@ -600,5 +628,5 @@ if (require.main === module) {
 
 module.exports = {
   server, parseInstagramUrl, parseEmbed, parseEmbedCaption, captionFromOgDescription,
-  decodeEntities, normalizeNode, bestImageUrl, isAllowedMediaUrl, runExtraction, cache,
+  decodeEntities, metaContent, normalizeNode, bestImageUrl, isAllowedMediaUrl, runExtraction, cache,
 };

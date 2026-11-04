@@ -447,7 +447,8 @@ async function runExtraction(parsed, trace) {
     r.items = r.items || [];
     trace.push({ method: name, ms: Date.now() - t0, status: r.status || null, items: r.items.length, video: !!r.videoHint, note: r.note || '' });
 
-    if (r.notFound) { notFound = true; break; }
+    // o embed às vezes diz "indisponível" para posts que existem: segue tentando os outros métodos
+    if (r.notFound) { notFound = true; continue; }
     // legenda: a de dado estruturado (exata) vence a de HTML; o OpenGraph (pode vir truncada) fica por último
     if (r.caption && (!caption || (r.authoritative && !captionAuth))) { caption = r.caption; captionAuth = !!r.authoritative; }
     if (r.username && !username) username = r.username;

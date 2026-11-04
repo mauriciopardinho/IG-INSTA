@@ -237,3 +237,10 @@ test('desempenho: página enorme do Instagram não trava o servidor (regex em te
   assert.ok(r);
   assert.ok(Date.now() - t0 < 1500, `levou ${Date.now() - t0}ms`);
 });
+
+test('embed diz "indisponível" mas o post existe: usa os outros métodos em vez de desistir', async () => {
+  const { status, body } = await extract(post('EMBEDFAKE1'));
+  assert.equal(status, 200);
+  assert.equal(body.type, 'image');
+  assert.equal(body.caption, 'Existe sim');
+});

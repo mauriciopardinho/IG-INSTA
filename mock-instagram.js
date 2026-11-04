@@ -105,6 +105,11 @@ function startMock({ assets } = {}) {
           edge_media_to_caption: caption('Legenda do GraphQL') } },
       }),
     },
+    // embed diz "indisponível" (falso negativo), mas o post existe e outro método encontra
+    EMBEDFAKE1: {
+      embed: () => embedPage('<div class="Err">Sorry, this post isn\'t available.</div>'),
+      graphql: () => ({ data: { xdt_shortcode_media: { __typename: 'XDTGraphImage', is_video: false, display_url: cdn('img.jpg'), edge_media_to_caption: caption('Existe sim') } } }),
+    },
     // post removido / privado
     GONE000001: {
       embed: () => embedPage('<div class="Err">Sorry, this post isn\'t available.</div>'),

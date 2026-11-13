@@ -880,6 +880,7 @@
       toast('Pedido recusado.'); ir('trocas');
     }
   };
+  (() => { const v = document.createElement('div'); v.textContent = 'versão 9'; v.style.cssText = 'position:fixed;bottom:2px;right:6px;font-size:10px;opacity:.5;pointer-events:none;z-index:9'; document.body.appendChild(v); })();
   $('#dlg').addEventListener('click', (e) => {
     if (e.target !== e.currentTarget) return;
     const r = e.currentTarget.getBoundingClientRect();

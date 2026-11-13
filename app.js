@@ -195,6 +195,23 @@
       <div class="selos">${r.lista.map((s) => `<div class="selo ${s.ganho ? '' : 'off'}"><span class="ic">${s.ic}</span><b>${esc(s.nome)}</b><span class="muted">${esc(s.desc)}</span></div>`).join('')}</div>
     </div>`;
 
+  // para onde cada notificação leva
+  function destinoNotif(n) {
+    const t = `${n.titulo} ${n.corpo}`.toLowerCase();
+    const adm = me.role === 'admin';
+    const r = (tab, rotulo) => ({ tab, rotulo });
+    if (/^(📢|✉️)/.test(n.titulo)) return r('avisos', 'Abrir Avisos');
+    if (/cadastro/.test(t)) return adm ? r('membros', 'Abrir Membros') : null;
+    if (/pedido de troca para você/.test(t)) return r('inicio', 'Ver o pedido de troca');
+    if (/troca/.test(t)) return adm ? r('trocas', 'Abrir Trocas') : r('inicio', 'Ir para o Início');
+    if (/oração/.test(t)) return r('oracao', 'Abrir Oração');
+    if (/selo|senha/.test(t)) return r('perfil', 'Abrir Meu perfil');
+    if (/indisponi|disponível/.test(t)) return adm ? r('indisp', 'Abrir Disponibilidade') : r('disponib', 'Abrir Minha disponibilidade');
+    if (/aniversário/.test(t)) return r('inicio', 'Ir para o Início');
+    if (/escala|escalad|confirm|presença|culto|serviu|obrigado/.test(t)) return r('escalas', 'Ver Escalas');
+    return r('inicio', 'Ir para o Início');
+  }
+
   // ---------- avatar, foto e sininho ----------
   const avatar = (p, px = 40) => (p && p.foto
     ? `<img class="avatar" src="${esc(p.foto)}" alt="" width="${px}" height="${px}">`
@@ -316,6 +333,10 @@
     show('app');
     sincronizarPush();
     ir(state.tab in TELAS && podeVer(state.tab) ? state.tab : 'inicio');
+    if (new URLSearchParams(location.search).get('abrir') === 'sino') {
+      history.replaceState(null, '', location.pathname);
+      run(() => acoes.abrirSino());
+    }
   }
 
   sb.auth.onAuthStateChange((evento, session) => {
@@ -758,9 +779,11 @@
     },
     abrirSino: async () => {
       const lista = ok(await sb.from('notificacoes').select('*').eq('user_id', me.id).order('created_at', { ascending: false }).limit(40));
+      state.notifs = lista;
       $('#dlg').innerHTML = `
         <h3>🔔 Notificações</h3>
-        ${lista.length ? lista.map((n) => `<div class="notif ${n.lida ? '' : 'nova'}"><b>${esc(n.titulo)}</b><p>${esc(n.corpo)}</p><span class="muted">${tempoAtras(n.created_at)}</span></div>`).join('') : '<p class="empty">Nenhuma notificação ainda.</p>'}
+        ${lista.length ? '<p class="muted">Toque em uma notificação para ver os detalhes.</p>' : ''}
+        ${lista.length ? lista.map((n, i) => `<div class="notif ${n.lida ? '' : 'nova'}" data-act="abrirNotif" data-i="${i}" role="button" tabindex="0" style="cursor:pointer"><div class="row between" style="flex-wrap:nowrap"><b>${esc(n.titulo)}</b><span class="muted">›</span></div><p>${esc(n.corpo.length > 90 ? n.corpo.slice(0, 90) + '…' : n.corpo)}</p><span class="muted">${tempoAtras(n.created_at)}</span></div>`).join('') : '<p class="empty">Nenhuma notificação ainda.</p>'}
         <div class="row" style="margin-top:12px"><button class="btn grow" data-act="fecharDlg">Fechar</button>${lista.length ? '<button class="btn" data-act="limparSino">Limpar tudo</button>' : ''}</div>`;
       $('#dlg').showModal();
       if (lista.some((n) => !n.lida)) {
@@ -768,6 +791,22 @@
         contarNaoLidas();
       }
     },
+    abrirNotif: (b) => {
+      const n = (state.notifs || [])[Number(b.dataset.i)];
+      if (!n) return;
+      const d = destinoNotif(n);
+      $('#dlg').innerHTML = `
+        <h3>${esc(n.titulo)}</h3>
+        <p style="white-space:pre-wrap;margin:10px 0">${esc(n.corpo)}</p>
+        <p class="muted">${new Date(n.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</p>
+        <div class="row" style="margin-top:12px">
+          ${d ? `<button class="btn primary grow" data-act="irNotif" data-tab="${d.tab}">${esc(d.rotulo)}</button>` : ''}
+          <button class="btn" data-act="voltarSino">Voltar</button>
+          <button class="btn" data-act="fecharDlg">Fechar</button>
+        </div>`;
+    },
+    irNotif: (b) => { $('#dlg').close(); ir(b.dataset.tab); },
+    voltarSino: () => acoes.abrirSino(),
     limparSino: async () => {
       ok(await sb.from('notificacoes').delete().eq('user_id', me.id));
       $('#dlg').close(); contarNaoLidas(); toast('Notificações limpas.');
@@ -824,6 +863,11 @@
       toast('Pedido recusado.'); ir('trocas');
     }
   };
+  $('#dlg').addEventListener('click', (e) => {
+    if (e.target !== e.currentTarget) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.currentTarget.close();
+  });
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-act]');
     if (!b || !acoes[b.dataset.act]) return;
@@ -1578,5 +1622,10 @@
   }
 
   // ---------- PWA ----------
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e.data && e.data.tipo === 'abrir-sino' && me) run(() => acoes.abrirSino());
+    });
+  }
 })();

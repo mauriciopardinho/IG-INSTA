@@ -498,6 +498,14 @@
       ok(await sb.from('eventos').upsert(linhas, { onConflict: 'data,titulo', ignoreDuplicates: true }));
       toast(`${linhas.length} culto(s) no calendário.`); ir('gerar');
     },
+    'f-recusa': async (f) => {
+      const d = formData(f);
+      const motivo = (d.motivo || '').trim();
+      if (motivo.length < 5) throw new Error('Escreva o motivo da recusa (mínimo de 5 letras).');
+      await chamarAdmin({ tipo: 'troca_responder', troca_id: d.troca_id, aceitar: false, motivo: motivo.slice(0, 1000) });
+      $('#dlg').close();
+      toast('Pedido recusado.'); ir('inicio');
+    },
     'f-troca': async (f) => {
       const d = formData(f);
       if (!d.destino_id) throw new Error('Escolha com quem você quer trocar.');
@@ -736,10 +744,19 @@
       await chamarAdmin({ tipo: 'troca_responder', troca_id: b.dataset.id, aceitar: true });
       toast('Troca aceita! Você assumiu esta escala.'); ir('inicio');
     },
-    recusarTrocaMembro: async (b) => {
-      if (!confirm('Recusar este pedido de troca?')) return;
-      await chamarAdmin({ tipo: 'troca_responder', troca_id: b.dataset.id, aceitar: false });
-      toast('Pedido recusado.'); ir('inicio');
+    recusarTrocaMembro: (b) => {
+      $('#dlg').innerHTML = `
+        <form id="f-recusa" class="stack">
+          <h3>Recusar troca</h3>
+          <p class="muted">Explique por que você não pode trocar. O colega e os líderes vão ver o motivo.</p>
+          <input type="hidden" name="troca_id" value="${esc(b.dataset.id)}">
+          <label>Motivo da recusa (obrigatório)
+            <textarea name="motivo" required minlength="5" maxlength="1000" placeholder="Ex.: também estarei ocupado nesse dia…"></textarea>
+          </label>
+          <div class="row"><button class="btn primary grow" type="submit">Recusar pedido</button>
+          <button class="btn" type="button" data-act="fecharDlg">Voltar</button></div>
+        </form>`;
+      $('#dlg').showModal();
     },
     cancelarTroca: async (b) => {
       if (!confirm('Cancelar seu pedido de troca?')) return;

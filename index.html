@@ -1,414 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0f0c1b">
-<meta name="color-scheme" content="dark">
-<title>Reelio — Baixar fotos e vídeos do Instagram</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236c47ff'/%3E%3Cpath d='M32 14v26m0 0-10-10m10 10 10-10M18 48h28' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<style>
-  :root {
-    --bg: #0f0c1b; --card: #19142b; --accent: #6c47ff; --violet: #8a3ffc; --blue: #0f62fe;
-    --glow: rgba(108, 71, 255, .35); --text: #f4f4f6; --muted: #a29bfe; --input: #231c3d;
-    --border: #322856; --error: #ff6b7a; --ok: #3ddc97;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    background: var(--bg); color: var(--text); min-height: 100vh; padding: 16px;
-    display: flex; justify-content: center; align-items: flex-start;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-  .app {
-    width: 100%; max-width: 480px; margin: 4vh auto; background: var(--card); border: 1px solid var(--border);
-    border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,.5), 0 0 80px var(--glow);
-  }
-  header { text-align: center; margin-bottom: 22px; }
-  .mark { width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 16px; display: grid; place-items: center;
-    background: linear-gradient(135deg, var(--accent), var(--violet)); box-shadow: 0 8px 16px var(--glow); }
-  .mark svg { width: 28px; height: 28px; }
-  h1 { font-size: 24px; font-weight: 800; letter-spacing: -.5px; }
-  header p { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
-
-  .field { position: relative; margin-bottom: 12px; }
-  input[type="text"] {
-    width: 100%; height: 52px; background: var(--input); border: 1px solid var(--border); border-radius: 14px;
-    padding: 0 84px 0 16px; color: #fff; font-size: 16px; outline: none; transition: border-color .2s, box-shadow .2s;
-  }
-  input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
-  .paste { position: absolute; right: 8px; top: 8px; bottom: 8px; padding: 0 14px; background: rgba(255,255,255,.08);
-    border: 0; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .paste:active { background: rgba(255,255,255,.16); }
-
-  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 46px; padding: 0 16px;
-    border: 1px solid var(--border); border-radius: 12px; background: var(--input); color: #fff; font-size: 14px; font-weight: 600;
-    cursor: pointer; text-decoration: none; transition: background .2s, transform .1s, opacity .2s; }
-  .btn:hover { background: #2e2550; }
-  .btn:active { transform: scale(.98); }
-  .btn.primary { height: 52px; font-size: 15px; font-weight: 700; border: 0; background: linear-gradient(135deg, var(--accent), var(--violet));
-    box-shadow: 0 8px 20px var(--glow); }
-  .btn.download { border: 0; background: linear-gradient(120deg, var(--violet), var(--blue)); }
-  .btn:disabled { opacity: .6; cursor: not-allowed; }
-  .btn svg { width: 18px; height: 18px; flex: none; }
-
-  .status { min-height: 20px; margin-top: 12px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.4; }
-  .status.error { color: var(--error); }
-  .spinner { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid var(--muted);
-    border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  details.tech { margin-top: 10px; font-size: 12px; color: var(--muted); }
-  details.tech summary { cursor: pointer; text-align: center; }
-  details.tech pre { margin: 8px 0; padding: 10px; background: #120e22; border: 1px solid var(--border); border-radius: 10px;
-    white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; color: #cfc9ff; }
-
-  .result { display: none; margin-top: 20px; flex-direction: column; gap: 16px; }
-  .result.show { display: flex; }
-  .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
-  .meta b { color: var(--text); font-weight: 600; word-break: break-all; }
-  .items { display: flex; flex-direction: column; gap: 18px; }
-  .item { display: flex; flex-direction: column; gap: 8px; }
-  /* Sem altura fixa: a mídia mantém a proporção original (nada de esticar nem cortar). */
-  .media { position: relative; background: #000; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-  .media img, .media video { display: block; width: 100%; height: auto; max-height: 72vh; object-fit: contain; background: #000; }
-  .media .fallback { padding: 28px 16px; text-align: center; font-size: 13px; color: var(--muted); }
-  .badge { position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 99px; background: rgba(15,12,27,.8);
-    font-size: 11px; font-weight: 700; letter-spacing: .3px; }
-
-  .caption { background: var(--input); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-  .caption .label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
-  .caption .text { font-size: 14px; line-height: 1.55; color: #e6e3ff; white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow-y: auto; }
-  .actions { display: grid; grid-template-columns: 1fr; gap: 8px; }
-  .actions.two { grid-template-columns: 1fr 1fr; }
-
-  .history { margin-top: 14px; }
-  .history .head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; text-transform: uppercase;
-    letter-spacing: .5px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
-  .history .head button { background: none; border: 0; color: var(--muted); font-size: 11px; cursor: pointer; text-decoration: underline; }
-  .history .list { display: flex; flex-direction: column; gap: 6px; }
-  .history .entry { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 9px 12px; background: var(--input);
-    border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 12.5px; cursor: pointer; text-align: left; }
-  .history .entry:hover { background: #2e2550; }
-  .history .entry span:last-child { color: var(--muted); flex: none; }
-  .history .entry span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .btn.small { min-height: 38px; font-size: 13px; }
-
-  footer { margin-top: 24px; text-align: center; color: #6f6590; font-size: 12px; line-height: 1.6; }
-  .hidden { display: none !important; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mídia Monte Moriah</title>
+  <meta name="theme-color" content="#14233f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Mídia Moriah">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="app">
-  <header>
-    <div class="mark">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <h1>Reelio</h1>
-    <p>Cole o link de um post, carrossel ou reel <b>público</b> do Instagram. Você recebe a foto ou o vídeo em alta qualidade e a legenda pronta para copiar.</p>
-  </header>
+  <div id="toast" role="status" aria-live="polite"></div>
 
-  <form id="form" autocomplete="off">
-    <div class="field">
-      <input id="link" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
-             placeholder="https://www.instagram.com/reel/..." aria-label="Link do Instagram">
-      <button class="paste" id="paste" type="button">Colar</button>
-    </div>
-    <button class="btn primary" id="go" type="submit">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Buscar mídia
-    </button>
-  </form>
+  <!-- ENTRAR / PRIMEIRO ACESSO / ESQUECI A SENHA -->
+  <main id="view-auth" class="view" hidden>
+    <div class="card auth">
+      <img class="logo" src="icon.svg" alt="" width="72" height="72">
+      <h1>Assembleia de Deus Monte Moriah</h1>
+      <p class="sub">Departamento de Mídia</p>
 
-  <div class="history hidden" id="history">
-    <div class="head"><span>Recentes</span><button id="hist-clear" type="button">Limpar</button></div>
-    <div class="list" id="hist-list"></div>
+      <div class="seg">
+        <button type="button" class="seg-btn active" data-act="authTab" data-tab="login">Entrar</button>
+        <button type="button" class="seg-btn" data-act="authTab" data-tab="signup">Primeiro acesso</button>
+      </div>
+
+      <form id="f-login" class="stack">
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Senha<input type="password" name="senha" autocomplete="current-password" required></label>
+        <button class="btn primary" type="submit">Entrar</button>
+        <button type="button" class="link" data-act="authTab" data-tab="forgot">Esqueci minha senha</button>
+      </form>
+
+      <form id="f-signup" class="stack" hidden>
+        <p class="hint">Crie seu acesso. Depois o líder da mídia vai aprovar e colocar você no seu grupo.</p>
+        <label>Nome completo<input type="text" name="nome" autocomplete="name" required></label>
+        <label>Telefone (WhatsApp)<input type="tel" name="telefone" autocomplete="tel" placeholder="(71) 90000-0000"></label>
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Senha (mínimo 6 caracteres)<input type="password" name="senha" minlength="6" autocomplete="new-password" required></label>
+        <label>Repita a senha<input type="password" name="senha2" minlength="6" autocomplete="new-password" required></label>
+        <button class="btn primary" type="submit">Criar meu acesso</button>
+      </form>
+
+      <form id="f-forgot" class="stack" hidden>
+        <p class="hint">Digite seu e-mail e enviaremos um link para criar uma nova senha.</p>
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <button class="btn primary" type="submit">Enviar link</button>
+        <button type="button" class="link" data-act="authTab" data-tab="login">Voltar para o login</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- NOVA SENHA (depois do link do e-mail) -->
+  <main id="view-reset" class="view" hidden>
+    <div class="card auth">
+      <h1>Criar nova senha</h1>
+      <form id="f-reset" class="stack">
+        <label>Nova senha<input type="password" name="senha" minlength="6" autocomplete="new-password" required></label>
+        <label>Repita a nova senha<input type="password" name="senha2" minlength="6" autocomplete="new-password" required></label>
+        <button class="btn primary" type="submit">Salvar senha</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- AGUARDANDO APROVAÇÃO -->
+  <main id="view-wait" class="view" hidden>
+    <div class="card auth center">
+      <img class="logo" src="icon.svg" alt="" width="72" height="72">
+      <h1>Cadastro recebido!</h1>
+      <p>Seu acesso está aguardando a aprovação do líder da mídia. Assim que ele liberar e colocar você no seu grupo, é só entrar de novo.</p>
+      <button class="btn" data-act="sair">Sair</button>
+      <button class="btn ghost" data-act="recarregar">Já fui aprovado, atualizar</button>
+    </div>
+  </main>
+
+  <!-- APP -->
+  <div id="view-app" class="view" hidden>
+    <header class="top">
+      <div class="row" style="flex-wrap:nowrap;gap:10px">
+        <span id="topo-avatar"></span>
+        <div>
+          <strong>Mídia Monte Moriah</strong>
+          <span id="who" class="who"></span>
+        </div>
+      </div>
+      <div class="row" style="flex-wrap:nowrap;gap:8px">
+        <button class="sino" data-act="abrirSino" aria-label="Notificações">🔔<span id="sino-n" class="sino-n" hidden>0</span></button>
+        <button class="btn small ghost" data-act="sair">Sair</button>
+      </div>
+    </header>
+    <nav id="nav" class="nav" aria-label="Menu principal"></nav>
+    <section id="content" class="content"></section>
   </div>
 
-  <div class="status" id="status" role="status" aria-live="polite"></div>
-  <details class="tech hidden" id="tech">
-    <summary>Detalhes técnicos</summary>
-    <pre id="tech-text"></pre>
-    <button class="btn" id="tech-copy" type="button">Copiar detalhes</button>
-  </details>
+  <dialog id="dlg"></dialog>
 
-  <section class="result" id="result" aria-label="Resultado">
-    <div class="meta"><span id="meta-user"></span><span id="meta-kind"></span></div>
-    <button class="btn download hidden" id="zip" type="button"></button>
-    <div class="items" id="items"></div>
-    <div class="caption" id="caption-box">
-      <div class="label">Legenda</div>
-      <div class="text" id="caption-text"></div>
-    </div>
-    <div class="actions" id="caption-actions">
-      <button class="btn" id="copy" type="button">Copiar legenda</button>
-      <button class="btn hidden" id="share" type="button">Compartilhar</button>
-    </div>
-  </section>
-
-  <footer>Funciona com posts, carrosséis e reels de contas públicas.<br>Use apenas conteúdo seu ou com permissão do autor.</footer>
-</main>
-
-<script>
-(() => {
-  const $ = (id) => document.getElementById(id);
-  const input = $('link'), goBtn = $('go'), statusEl = $('status'), result = $('result'), itemsEl = $('items');
-  let current = null;
-
-  const DL_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-  function setStatus(msg, kind) {
-    statusEl.className = 'status' + (kind === 'error' ? ' error' : '');
-    statusEl.textContent = '';
-    if (kind === 'loading') { const s = document.createElement('span'); s.className = 'spinner'; statusEl.appendChild(s); }
-    statusEl.appendChild(document.createTextNode(msg || ''));
-  }
-  function setTech(trace) {
-    const box = $('tech');
-    if (!trace || !trace.length) { box.classList.add('hidden'); return; }
-    $('tech-text').textContent = JSON.stringify(trace, null, 2);
-    box.classList.remove('hidden');
-  }
-  function reset() {
-    current = null; result.classList.remove('show'); itemsEl.textContent = ''; setTech(null); setStatus('');
-  }
-
-  // Todas as mídias passam pelo proxy do próprio site (evita bloqueio de CDN e expiração de link no navegador).
-  function proxy(url, type, opts = {}) {
-    const name = opts.name ? '&name=' + encodeURIComponent(opts.name) : '';
-    return `/download?url=${encodeURIComponent(url)}&type=${type}${opts.dl ? '&dl=1' : ''}${name}`;
-  }
-
-  function saveBlob(blob, filename) {
-    const u = URL.createObjectURL(blob); const d = document.createElement('a');
-    d.href = u; d.download = filename; document.body.appendChild(d); d.click(); d.remove();
-    setTimeout(() => URL.revokeObjectURL(u), 15000);
-  }
-  async function fetchBlob(url, type) {
-    const r = await fetch(proxy(url, type));
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.blob();
-  }
-
-  // ZIP simples (sem compressão), feito no navegador: não precisa de biblioteca nem de servidor.
-  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
-  function crc32(buf) { let c = 0xffffffff; for (let i = 0; i < buf.length; i++) c = CRC[(c ^ buf[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
-  function makeZip(files) { // files: [{ name, data: Uint8Array }]
-    const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
-    const now = new Date();
-    const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
-    const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
-    for (const f of files) {
-      const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
-      const lh = new DataView(new ArrayBuffer(30));
-      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
-      lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
-      lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
-      parts.push(lh.buffer, name, f.data);
-      const ch = new DataView(new ArrayBuffer(46));
-      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
-      ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
-      ch.setUint32(20, size, true); ch.setUint32(24, size, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
-      central.push(ch.buffer, name);
-      offset += 30 + name.length + size;
-    }
-    const cdSize = central.reduce((n, p) => n + (p.byteLength !== undefined ? p.byteLength : p.length), 0);
-    const end = new DataView(new ArrayBuffer(22));
-    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
-    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
-    return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
-  }
-
-  async function downloadAll() {
-    if (!current) return;
-    const btn = $('zip'), label = btn.textContent;
-    btn.disabled = true;
-    try {
-      const files = [];
-      for (let i = 0; i < current.items.length; i++) {
-        btn.textContent = `Preparando ${i + 1} de ${current.items.length}…`;
-        const it = current.items[i];
-        let blob = await fetchBlob(it.url, it.type);
-        let ext = 'mp4';
-        if (it.type !== 'video') { blob = await toJpeg(blob); ext = 'jpg'; }
-        files.push({ name: `reelio-${current.shortcode}-${i + 1}.${ext}`, data: new Uint8Array(await blob.arrayBuffer()) });
-      }
-      if (current.caption) files.push({ name: 'legenda.txt', data: new TextEncoder().encode(current.caption) });
-      saveBlob(makeZip(files), `reelio-${current.shortcode}.zip`);
-    } catch { setStatus('Não consegui montar o ZIP. Baixe os itens um por um.', 'error'); }
-    finally { btn.disabled = false; btn.textContent = label; }
-  }
-
-  // Histórico local (só neste navegador; se o armazenamento estiver bloqueado, simplesmente não aparece).
-  const HKEY = 'reelio_history';
-  function loadHistory() { try { const v = JSON.parse(localStorage.getItem(HKEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } }
-  function saveHistory(list) { try { localStorage.setItem(HKEY, JSON.stringify(list)); } catch { /* ignora */ } }
-  function renderHistory() {
-    const list = loadHistory(), box = $('history'), el = $('hist-list');
-    el.textContent = '';
-    box.classList.toggle('hidden', !list.length);
-    for (const h of list) {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'entry';
-      const a = document.createElement('span'); a.textContent = (h.user ? '@' + h.user + ' · ' : '') + h.code;
-      const k = document.createElement('span'); k.textContent = ({ video: 'Vídeo', image: 'Foto', carousel: 'Carrossel' })[h.type] || '';
-      b.append(a, k);
-      b.addEventListener('click', () => { input.value = h.url; fetchMedia(); });
-      el.appendChild(b);
-    }
-  }
-  function remember(url, data) {
-    const list = loadHistory().filter((h) => h.code !== data.shortcode);
-    list.unshift({ code: data.shortcode, url, type: data.type, user: data.username || '' });
-    saveHistory(list.slice(0, 8)); renderHistory();
-  }
-
-  async function toJpeg(blob) {
-    if (blob.type === 'image/jpeg') return blob;
-    const bmp = await createImageBitmap(blob);
-    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
-    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0);
-    return await new Promise((ok, no) => c.toBlob((x) => (x ? ok(x) : no(new Error('falha'))), 'image/jpeg', 0.95));
-  }
-
-  function buildItem(item, idx, total, shortcode) {
-    const fig = document.createElement('figure'); fig.className = 'item';
-    const media = document.createElement('div'); media.className = 'media';
-    const isVideo = item.type === 'video';
-    let el;
-    if (isVideo) {
-      el = document.createElement('video');
-      el.controls = true; el.playsInline = true; el.preload = 'metadata';
-      if (item.thumb) el.poster = proxy(item.thumb, 'image');
-      el.src = proxy(item.url, 'video');
-    } else {
-      el = document.createElement('img');
-      el.alt = 'Foto do post'; el.decoding = 'async';
-      el.src = proxy(item.url, 'image');
-    }
-    el.addEventListener('error', () => {
-      if (media.querySelector('.fallback')) return;
-      el.classList.add('hidden');
-      const f = document.createElement('div'); f.className = 'fallback';
-      f.textContent = 'Não foi possível mostrar a prévia, mas o botão abaixo ainda tenta baixar o arquivo.';
-      media.appendChild(f);
-    }, { once: true });
-    media.appendChild(el);
-    if (total > 1) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = `${idx + 1}/${total}`; media.appendChild(b); }
-    fig.appendChild(media);
-
-    const a = document.createElement('a'); a.className = 'btn download';
-    const label = isVideo ? 'Baixar vídeo' : 'Baixar foto';
-    a.innerHTML = DL_ICON; a.appendChild(document.createTextNode(total > 1 ? `${label} ${idx + 1} de ${total}` : label));
-    a.href = proxy(item.url, item.type, { dl: true, name: `reelio-${shortcode}${total > 1 ? '-' + (idx + 1) : ''}` });
-    a.setAttribute('download', '');
-    if (!isVideo) {
-      // Instagram às vezes entrega WebP: converte para JPEG aqui no navegador antes de salvar.
-      a.addEventListener('click', async (ev) => {
-        ev.preventDefault();
-        try {
-          const blob = await toJpeg(await (await fetch(proxy(item.url, 'image'))).blob());
-          const u = URL.createObjectURL(blob); const d = document.createElement('a');
-          d.href = u; d.download = `reelio-${shortcode}${total > 1 ? '-' + (idx + 1) : ''}.jpg`;
-          document.body.appendChild(d); d.click(); d.remove(); setTimeout(() => URL.revokeObjectURL(u), 10000);
-        } catch { window.location.href = a.href; }
-      });
-    }
-    fig.appendChild(a);
-    if (isVideo && item.thumb) {
-      const c = document.createElement('button'); c.type = 'button'; c.className = 'btn small';
-      c.textContent = 'Baixar capa do vídeo';
-      c.addEventListener('click', async () => {
-        c.disabled = true;
-        try { saveBlob(await toJpeg(await fetchBlob(item.thumb, 'image')), `reelio-${shortcode}${total > 1 ? '-' + (idx + 1) : ''}-capa.jpg`); }
-        catch { setStatus('Não consegui baixar a capa.', 'error'); }
-        finally { c.disabled = false; }
-      });
-      fig.appendChild(c);
-    }
-    return fig;
-  }
-
-  function render(data) {
-    current = data;
-    $('meta-user').innerHTML = '';
-    if (data.username) { const b = document.createElement('b'); b.textContent = '@' + data.username; $('meta-user').appendChild(b); }
-    $('meta-kind').textContent = ({ video: 'Vídeo', image: 'Foto', carousel: `Carrossel · ${data.items.length} itens` })[data.type] || '';
-    itemsEl.textContent = '';
-    data.items.forEach((it, i) => itemsEl.appendChild(buildItem(it, i, data.items.length, data.shortcode)));
-    const zipBtn = $('zip');
-    zipBtn.classList.toggle('hidden', data.items.length < 2);
-    zipBtn.textContent = `Baixar tudo (ZIP · ${data.items.length} itens)`;
-    const hasCaption = !!(data.caption && data.caption.trim());
-    $('caption-text').textContent = hasCaption ? data.caption : '(este post não tem legenda)';
-    $('copy').disabled = !hasCaption;
-    $('share').classList.toggle('hidden', !navigator.share);
-    $('caption-actions').classList.toggle('two', !!navigator.share);
-    result.classList.add('show');
-  }
-
-  async function fetchMedia(e) {
-    if (e) e.preventDefault();
-    if (goBtn.disabled) return;
-    const url = input.value.trim();
-    if (!url || !/instagram\.com|instagr\.am/i.test(url)) { reset(); setStatus('Cole um link válido de post ou reel do Instagram.', 'error'); return; }
-    reset(); goBtn.disabled = true;
-    setStatus('Buscando mídia e legenda…', 'loading');
-    const wake = setTimeout(() => setStatus('Ainda buscando… o servidor gratuito pode levar até 1 minuto para acordar.', 'loading'), 8000);
-    try {
-      const ctrl = new AbortController(); const abortT = setTimeout(() => ctrl.abort(), 45000);
-      const res = await fetch('/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }), signal: ctrl.signal }).finally(() => clearTimeout(abortT));
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setStatus(data.error || 'Não consegui extrair a mídia desse link.', 'error'); setTech(data.trace); return; }
-      setStatus(''); render(data); remember(url, data);
-    } catch (err) {
-      setStatus(err && err.name === 'AbortError' ? 'O servidor não respondeu em 45 segundos. Tente de novo; se repetir, abra /diag no endereço do site.' : 'Não consegui falar com o servidor. Verifique sua conexão e tente de novo.', 'error');
-      setTech([{ method: 'rede', note: String(err && err.message || err) }]);
-    } finally { clearTimeout(wake); goBtn.disabled = false; }
-  }
-
-  async function copyText(text) {
-    try { await navigator.clipboard.writeText(text); return true; } catch { /* tenta o método antigo */ }
-    try {
-      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
-      document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
-    } catch { return false; }
-  }
-
-  $('form').addEventListener('submit', fetchMedia);
-  input.addEventListener('paste', () => setTimeout(() => { if (/instagram\.com|instagr\.am/i.test(input.value)) fetchMedia(); }, 50));
-  $('zip').addEventListener('click', downloadAll);
-  $('hist-clear').addEventListener('click', () => { saveHistory([]); renderHistory(); });
-  renderHistory();
-  $('paste').addEventListener('click', async () => {
-    try { input.value = await navigator.clipboard.readText(); input.focus(); if (/instagram\.com|instagr\.am/i.test(input.value)) fetchMedia(); }
-    catch { setStatus('Não consegui acessar a área de transferência. Cole manualmente no campo.', 'error'); }
-  });
-  $('copy').addEventListener('click', async () => {
-    if (!current || !current.caption) return;
-    const ok = await copyText(current.caption);
-    setStatus(ok ? 'Legenda copiada!' : 'Não consegui copiar a legenda.', ok ? '' : 'error');
-    if (ok) setTimeout(() => { if (statusEl.textContent === 'Legenda copiada!') setStatus(''); }, 2500);
-  });
-  $('tech-copy').addEventListener('click', async () => {
-    const ok = await copyText($('tech-text').textContent);
-    setStatus(ok ? 'Detalhes copiados.' : 'Não consegui copiar.', ok ? '' : 'error');
-  });
-  $('share').addEventListener('click', async () => {
-    if (!current) return;
-    const first = current.items[0];
-    try {
-      setStatus('Preparando para compartilhar…', 'loading');
-      const resp = await fetch(proxy(first.url, first.type));
-      const blob = await resp.blob();
-      const ext = blob.type.includes('video') ? 'mp4' : 'jpg';
-      const file = new File([blob], `reelio-${current.shortcode}.${ext}`, { type: blob.type });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], text: current.caption || '' });
-      else await navigator.share({ text: current.caption || '' });
-      setStatus('');
-    } catch (err) { setStatus(err && err.name === 'AbortError' ? '' : 'Não foi possível compartilhar.', err && err.name === 'AbortError' ? '' : 'error'); }
-  });
-})();
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="mensagens.js"></script>
+  <script src="app9.js"></script>
 </body>
 </html>
